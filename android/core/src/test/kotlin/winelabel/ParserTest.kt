@@ -13,7 +13,7 @@ import winelabel.parse.Reference
 import winelabel.parse.SequenceMatcher
 import winelabel.parse.Text
 
-/** Mirrors tests/test_parser.py. */
+/** Parser units: extractors, name matching, normalization, difflib-compatible ratios. */
 class ParserTest {
     private fun l(text: String, h: Double = 20.0) = OcrLine.rect(text, 0.99, 0.0, 0.0, 100.0, h)
 

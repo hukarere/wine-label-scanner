@@ -11,7 +11,7 @@ the evaluation tools find it next to the photos. Products not yet in the ground 
 added to it as drafts from the shop's data, marked `"_draft": true` — check each against
 its photo, fix it, and remove the marker (see docs/PROJECT_NOTES.md "Vinmonopolet test set").
 
-    .venv/bin/python tools/fetch_vinmonopolet.py [out_dir] [code ...]
+    python3 tools/fetch_vinmonopolet.py [out_dir] [code ...]      (from the repo root; stdlib only)
 """
 from __future__ import annotations
 
@@ -32,7 +32,8 @@ CODES = [
 ]
 API = "https://www.vinmonopolet.no/vmpws"
 IMAGE = "https://bilder.vinmonopolet.no/cache/2000x2000-0/{code}-1.jpg"
-GROUND_TRUTH = Path(__file__).resolve().parent.parent / "fixtures" / "vinmonopolet.expected.json"
+FIXTURES = Path(__file__).resolve().parent.parent / "fixtures"
+GROUND_TRUTH = FIXTURES / "vinmonopolet.expected.json"
 HEADERS = {"User-Agent": "Mozilla/5.0 (wine-label-scanner test-set fetcher)"}
 COUNTRIES = {  # Vinmonopolet (Norwegian) -> winelabel/data/countries.txt
     "frankrike": "France", "italia": "Italy", "spania": "Spain", "portugal": "Portugal",
@@ -84,7 +85,7 @@ def draft(detail: dict, listing: dict) -> dict:
 
 
 def main() -> None:
-    out = Path(sys.argv[1] if len(sys.argv) > 1 else "fixtures/vinmonopolet")
+    out = Path(sys.argv[1]) if len(sys.argv) > 1 else FIXTURES / "vinmonopolet"
     codes = sys.argv[2:] or CODES
     out.mkdir(parents=True, exist_ok=True)
     meta_path, exp_link = out / "metadata.json", out / "expected.json"

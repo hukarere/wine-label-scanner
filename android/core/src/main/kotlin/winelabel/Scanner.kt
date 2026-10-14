@@ -20,7 +20,7 @@ data class ScanResult(
     val engine: String,
 )
 
-/** Port of winelabel/scanner.py: image -> OCR lines -> raw text + parsed fields. */
+/** Image -> OCR lines -> raw text + parsed fields. */
 object Scanner {
     const val MAX_SIDE = 2000
 

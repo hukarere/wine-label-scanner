@@ -3,5 +3,5 @@
 *.apk.gz
 .DS_Store
 
-# Copyrighted retailer photos: local test set only (python/tools/fetch_vinmonopolet.py)
-python/fixtures/vinmonopolet/
+# Copyrighted retailer photos: local test set only (tools/fetch_vinmonopolet.py)
+fixtures/vinmonopolet/

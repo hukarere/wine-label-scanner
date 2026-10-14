@@ -5,8 +5,8 @@ import winelabel.model.OcrLine
 import java.time.LocalDate
 
 /**
- * Line-for-line port of winelabel/parser.py. Keep the two in sync: both run the
- * shared fixtures in python/fixtures/text.
+ * Wine label field parser: OCR lines in reading order -> [WineLabel]. Originally a port of
+ * the (retired) Python prototype; test cases are the JSON files in fixtures/text.
  */
 
 const val FUZZY_MIN_LEN = 6        // names shorter than this must match exactly

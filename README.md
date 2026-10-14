@@ -6,25 +6,22 @@ OCR runs fully on-device with PaddleOCR's PP-OCRv6 models on ONNX Runtime.
 
 | Directory | What |
 |---|---|
-| [`python/`](python/README.md) | Python prototype: OCR pipeline (rapidocr), field parser, CLI, accuracy evaluation on real photos |
-| [`android/`](android/README.md) | Android app (Kotlin, Compose): Kotlin port of the pipeline + parser, with an ML Kit engine for comparison |
+| [`android/`](android/README.md) | Android app (Kotlin, Compose). `core/` holds the whole recognition pipeline as plain Kotlin, so it also runs and is tested on a desktop JVM |
+| `fixtures/` | Test cases: OCR-line cases (`text/`), 8 labelled real photos (`images/`), ground truth for a local-only retailer photo set |
+| `tools/` | `fetch_vinmonopolet.py`: downloads the local-only retailer photo set (stdlib Python) |
+| [`docs/`](docs/PROJECT_NOTES.md) | Project notes: status, roadmap, decisions, measurements |
 
-Both share the test fixtures in `python/fixtures/` (OCR-line cases and 8 labelled
-real photos), so the Python and Kotlin parsers are checked against the same expectations.
+The project started with a Python prototype (rapidocr); it was retired once the Kotlin
+port matched it (see the notes). It is in the git history before the retirement commit.
 
 ## Quick start
 
 ```bash
-# Python prototype
-cd python
-python3 -m venv .venv && .venv/bin/pip install -e '.[dev]'
-.venv/bin/pytest -q
-.venv/bin/winelabel scan photo.jpg
-
-# Android app (JDK 17 + Android SDK)
-cd android
-./gradlew :core:test          # parser + OCR parity tests on the JVM
-./gradlew :app:assembleDebug  # app/build/outputs/apk/debug/app-debug.apk
+cd android                             # JDK 17 + Android SDK
+./gradlew :core:test                   # parser, layout and OCR tests on the JVM
+./gradlew -q :core:cli --args="scan fixtures/images/filhot_2008.jpg"   # read one photo
+./gradlew -q :core:cli --args="eval fixtures/images"                   # accuracy on a folder
+./gradlew :app:assembleDebug           # app/build/outputs/apk/debug/app-debug.apk
 ```
 
 ## Working on this project
@@ -38,5 +35,7 @@ Start with [`AGENTS.md`](AGENTS.md) (environment, commands, rules; Claude Code l
 - OCR models in `android/app/src/main/assets/models/`: PaddleOCR PP-OCRv6 and
   PP-OCR text orientation classifier (Apache License 2.0), ONNX conversions distributed
   by [RapidOCR](https://github.com/RapidAI/RapidOCR).
-- Test photos in `python/fixtures/images/`: Wikimedia Commons, CC BY-SA / public
-  domain; authors and licenses in [`ATTRIBUTION.md`](python/fixtures/images/ATTRIBUTION.md).
+- Test photos in `fixtures/images/`: Wikimedia Commons, CC BY-SA / public
+  domain; authors and licenses in [`ATTRIBUTION.md`](fixtures/images/ATTRIBUTION.md).
+- `fixtures/vinmonopolet.expected.json`: facts and short text read from product photos
+  of Vinmonopolet (vinmonopolet.no); the photos themselves are not in the repository.

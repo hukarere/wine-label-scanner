@@ -3,7 +3,7 @@ package winelabel.parse
 /** A reference name: [display] is reported, [key] (normalized) is matched, [extra] e.g. a region's country. */
 data class RefName(val display: String, val key: String, val extra: String = "")
 
-/** Grape / region / country lists, loaded from resources (same files as the Python prototype). */
+/** Grape / region / country lists, loaded from resources/winelabel/data. */
 object Reference {
     val grapes: List<RefName> by lazy {
         sortedNames(dataLines("grapes.txt").map { RefName(it, Text.normalize(it)) })

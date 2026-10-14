@@ -3,7 +3,7 @@ package winelabel.layout
 import winelabel.model.OcrLine
 import kotlin.math.abs
 
-/** Port of winelabel/layout.py: unordered OCR lines -> rows -> reading order -> raw text. */
+/** Unordered OCR lines -> rows -> reading order -> raw text. */
 object Layout {
     /** Lines whose vertical centres overlap form a row; rows top to bottom, each left to right. */
     fun groupRows(lines: List<OcrLine>): List<List<OcrLine>> {

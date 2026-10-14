@@ -20,8 +20,8 @@ Detailed record for resuming work. The short operational brief is [`AGENTS.md`](
 
 | Area | State |
 |---|---|
-| Python prototype | Done. 57 tests pass. |
-| Kotlin `core` | Done. 55 JVM tests pass, including OCR on the 8 real photos (parity with Python). |
+| Python prototype | **Retired** (timeline 20) after the Kotlin port matched it; in git history before that commit. |
+| Kotlin `core` | The single implementation. 58 JVM tests pass, including OCR on the 8 real photos; desktop CLI `:core:cli` (`scan`, `eval`). JVM results equal the phone's. |
 | Android app | Builds (debug, arm64-v8a, 74 MB), lint clean. Installed on the user's phone (Honor 10 Lite HRY-LX1, Android 10, **2.7 GB RAM**, ru locale). |
 | On-device | Tested directly from the VPS over an adb tunnel ([Testing on the user's phone](#testing-on-the-users-phone)). `DeviceScanTest` runs both engines on the 8 photos. Fixed: ICU regex crash, locale crash in the debug report. PP-OCR memory: fixed by cutting image copies (bit-identical output) and a **free-memory budget that caps the detector input only when needed** — all 8 Commons photos now run in one process (31/37, was killed on the 5th). |
 | Repo | github.com/hukarere/wine-label-scanner (public). No LICENSE yet. APK not published as a Release. |
@@ -39,12 +39,12 @@ splits the wrong line), missing regions/grapes, then real-bottle scans → fixtu
 Prioritized; none started unless noted.
 
 0. ~~PP-OCR memory on 2–3 GB phones~~ — done (budgeted detector cap); watch `det_capped` in debug reports from real use.
-1. **Collect real-scan debug reports** → add as fixtures (see [Adding a test case](#adding-a-test-case)) → parser fixes in both languages.
-2. **Choose an engine** (PP-OCR ONNX vs ML Kit) from on-device results; drop the other to cut 12–18 MB.
+1. **Collect real-scan debug reports** → add as fixtures (see [Adding a test case](#adding-a-test-case)) → parser fixes.
+2. **Choose an engine** — measurements favour PP-OCR (31 vs 22/37, 77 vs 69/108); proposed: remove ML Kit (−12 MB, no network permissions). Awaiting the user's go-ahead.
 3. **Release build**: enable R8 (`isMinifyEnabled`, check ONNX Runtime keep rules), release signing key, smaller APK (~10 MB of debug dex goes away).
 4. **Capture quality**: in-app guidance; multi-shot for curved labels (left/centre/right photos, merge lines by text similarity).
 5. Producer extraction is the weakest field (decorative/script fonts). Ideas: prefer a producer-keyword line over the largest line more aggressively; use the photo's top third; fuzzy-join split rows.
-6. Optional: CLAHE port to Kotlin (Python: +2 text snippets, −2 fields on the 8 photos — unclear benefit).
+6. Optional: CLAHE contrast enhancement (the retired Python prototype measured +2 text snippets, −2 fields on the 8 photos — unclear benefit).
 7. Optional: int8-quantized models (smaller/faster; must re-measure accuracy).
 8. `armeabi-v7a` build if a 32-bit phone shows up (`INSTALL_FAILED_NO_MATCHING_ABIS`).
 9. Remove ML Kit's merged `INTERNET`/`ACCESS_NETWORK_STATE` permissions (`tools:node="remove"`) — needs on-device check that ML Kit still works.
@@ -76,20 +76,21 @@ Prioritized; none started unless noted.
 17. Phone over the tunnel works (both adb builds speak protocol 41: VPS 37.0.1, user's Debian 34.0.4). Restored `DeviceScanTest` (androidTest; both engines on the 8 fixture photos through the app's own code) and added `android/tools/device-test.sh`. First on-device run found: (a) `DebugReport` used `"%.2f".format(x).toDouble()` → `NumberFormatException: "0,58"` in the ru locale — fixed with locale-free rounding; (b) PP-OCR process **killed by the low-memory killer** on the 5th photo. Measured memory, tried ONNX Runtime options (`PpOcrEngine.Config.lowMemory`: no arena, no memory pattern — small gain), detector input caps and tiled detection (see [Memory on the phone](#memory-on-the-phone)). ML Kit on the phone: 22/37 fields, 39/59 text, 412 MB peak.
 18. The 8 Commons photos aren't representative. Built a second, **local-only** set of 26 Vinmonopolet packshots (`python/tools/fetch_vinmonopolet.py`, gitignored output) with hand-checked ground truth (committed as `python/fixtures/vinmonopolet.expected.json`): 8 of the shop's vintages didn't match the label, producers are often company names, ABV/volume usually sit on the back label. PP-OCR (JVM and phone, identical) 77/108 fields, ML Kit 69/108; they differ mainly on producer (10 vs 4 of 24). `PpOcrParityTest` and the androidTest APK take `-Pphotos=<folder>`.
 19. PP-OCR memory work. Lighter detectors (v6 tiny, v5/v4 mobile) tie on Vinmonopolet but lose 7–9 fields on Commons and save at most ~150 MB → rejected. Cut Java copies: `Scanner.prepare` resizes one channel at a time from the packed pixels; the detector tensor is resized+normalized straight into a direct buffer that ORT uses without copying — **bit-identical OCR output on all 34 photos** (`-Pdump` diff), peaks −40…80 MB. Added `PpOcrEngine.detMaxPixels` (default 0 = off, so JVM/Python parity is unchanged) and `AppScan`/`DeviceMemory`: before each ONNX scan the app caps the detector input to (availMem − threshold − 64 MB) / 170 B, min 1 MP. Debug report gains `det_input`, `det_capped`, `det_max_pixels`, `avail_mem_mb`; the UI says "reduced detail: low memory".
+20. **Retired the Python prototype.** It doubled every parser change, and the Kotlin `core` on the JVM is the more faithful test bed (it gives the phone's exact results; Python scored 74 vs 77/108 on Vinmonopolet). Moved `python/fixtures/` → `fixtures/` and the fetch script → `tools/`; added the desktop CLI (`core/src/cli`: `scan`, `eval`, shared `Evaluate` used by the tests too); ported the two Python-only tests (noise filter, synthetic rendered label at 0°/7°) → 58 Kotlin tests. CLI `eval --dump` output is identical to the pre-move baseline on all 34 photos. The golden OCR output in `core/src/test/resources/golden/` stays as a frozen reference.
 
 ---
 
 ## Architecture
 
-### Pipeline (same in Python and Kotlin)
+### Pipeline (`core`; a port of rapidocr 3.x with its default settings)
 
 ```
 photo
- └─ prepare: EXIF-rotate (app/PIL), downscale long side ≤ 2000 (area); Python optionally CLAHE
+ └─ prepare: decode + EXIF-rotate (app: BitmapFactory, ≥ 2000 px kept; CLI/tests: ImageIO), downscale long side ≤ 2000 (area)
      └─ OCR engine → list of OcrLine(text, confidence, 4-point box)
-          PP-OCR (rapidocr / PpOcrEngine):
+          PP-OCR (PpOcrEngine):
             bound sides (≤2000, ≥30, multiples of 32) → vertical padding if very wide
-            → DET: DBNet, resize so short side ≥ 736 (×32), (x/255−0.5)/0.5, BGR, NCHW
+            → DET: DBNet, resize so short side ≥ 736 (×32; app: capped to detMaxPixels from free memory), (x/255−0.5)/0.5, BGR, NCHW
               → prob map > 0.3 → 2×2 dilation → connected components → min-area rect
               → mean prob in box ≥ 0.5 → unclip ×1.6 → scale back → sort rows (Δy ≥ 10)
             → crop each box (perspective warp, bicubic; rotate 90° if h/w ≥ 1.5)
@@ -102,22 +103,22 @@ photo
      └─ parser → WineLabel fields, each = (value, confidence, source line)
 ```
 
-### Parser (`parser.py` / `LabelParser.kt`)
+### Parser (`parse/LabelParser.kt`)
 
 - `normalize`: collapse dotted abbreviations (D.O.C.→doc), NFKD strip accents, lowercase, non-`[a-z0-9%]`→space, split digit runs from ≥3-letter runs.
 - `match_names` over reference lists (longest names first), three passes on unclaimed words: exact word sequence → glued token (multi-word name ≥ 8 chars inside one token) → fuzzy (difflib ratio ≥ 0.88; ≥ 0.80 for names ≥ 12 chars, also vs. the name's prefix ×0.95 for truncation; names < 6 chars exact only).
 - Extractors: ABV (3 regex tiers, 4.5–23 %), volume (ml/cl/l → ml, 100–6000, common sizes trusted), vintage (1950–2049, ≤ current year, skip founding/classification lines, prefer standalone/large/"vintage"-hinted), classification (ordered pattern list with blanking + adjacent-line pairs that must cross the break; strict case-sensitive `DO`), appellation ("Appellation X Contrôlée" phrase, else region names near markers/more words/larger text), grapes, country (phrase → any name → appellation's country → classification's country), producer (keyword bonus + text height, excluding bottling/legal/founding lines and lines fully explained by other fields; merges same-row pieces; strips ®/@ noise).
 
-### Kotlin modules
+### Kotlin modules (`android/core/src/`)
 
-| Python | Kotlin (`android/core/src/main/kotlin/winelabel/`) |
+| Path | What |
 |---|---|
-| `model.py` | `model/OcrLine.kt`, `model/RgbImage.kt` (0xRRGGBB ints) |
-| `layout.py` | `layout/Layout.kt` |
-| `parser.py` | `parse/LabelParser.kt`, `parse/Text.kt`, `parse/Reference.kt`, `parse/SequenceMatcher.kt` |
-| rapidocr (library) | `ocr/PpOcrEngine.kt`, `ocr/ImageOps.kt` (resize, warp, rotations), `ocr/Geometry.kt` (components, hull, min-area rect, unclip, box score) |
-| `ocr.py` interface | `ocr/OcrEngine.kt` |
-| `scanner.py` | `Scanner.kt` |
+| `main/.../model/` | `OcrLine`, `RgbImage` (0xRRGGBB ints) |
+| `main/.../layout/Layout.kt` | rows, reading order, raw text |
+| `main/.../parse/` | `LabelParser`, `Text` (normalize), `Reference` (lists in `main/resources/winelabel/data/`), `SequenceMatcher` (difflib ratio) |
+| `main/.../ocr/` | `OcrEngine`, `PpOcrEngine` (port of rapidocr), `ImageOps` (resize, warp, rotations), `Geometry` (components, hull, min-area rect, unclip, box score) |
+| `main/.../Scanner.kt` | prepare → OCR → noise filter → reading order → parse |
+| `cli/.../cli/` | desktop only: `Main` (`scan`, `eval`), `Evaluate` (scoring, report, `--dump`; used by the tests), `Desktop` (ImageIO, models, debug image) |
 
 `core` compiles against `com.microsoft.onnxruntime:onnxruntime` (`compileOnly`, desktop); the
 app supplies `onnxruntime-android` — same `ai.onnxruntime` API.
@@ -125,18 +126,19 @@ app supplies `onnxruntime-android` — same `ai.onnxruntime` API.
 ### App (`android/app/src/main/kotlin/winelabel/app/`)
 
 - `MainActivity` — Compose host; accepts `ACTION_SEND image/*` (share a photo into the app).
-- `ScanViewModel` — `UiState` Idle / Working / Done(result, timings) / Error(message, details); engine choice persisted in SharedPreferences; keeps the last image for "Re-scan with other engine"; logs errors with tag `WineLabel`.
+- `ScanViewModel` — `UiState` Idle / Working / Done(result, info) / Error(message, details); engine choice persisted in SharedPreferences; keeps the last image for "Re-scan with other engine"; logs errors with tag `WineLabel`.
+- `AppScan` / `DeviceMemory` — the scan path shared by the UI and `DeviceScanTest`: free-memory budget → `PpOcrEngine.detMaxPixels`, scan, `ScanInfo` (timings, detector size, cap, free memory).
 - `Engines` — lazily loads the ONNX models from `assets/models/` (+ keys file); `MlKitEngine` adapter.
 - `AndroidImages` — URI → downsampled decode (long side kept ≥ 2000) → EXIF rotation → `RgbImage`.
 - `ui/ScanScreen` — engine chips, Take photo (`TakePicture` + FileProvider → **no camera permission**), Choose photo (`PickVisualMedia`), photo with box overlay, fields with confidence (faded < 50 %), raw text, Copy text / Share / Copy debug report / Re-scan.
-- `DebugReport` — JSON: app version, device, engine, image size, total and per-stage ms, raw text, fields, lines with boxes.
+- `DebugReport` — JSON: app version, device, engine, image size, total and per-stage ms, detector input/cap/free memory, raw text, fields, lines with boxes.
 
 ### Tests
 
 | Suite | Count | What |
 |---|---|---|
-| Python `tests/` | 57 | parser fixtures + units, layout, synthetic-label OCR smoke test, real-photo accuracy floors |
-| Kotlin `core/src/test/` | 55 | same parser fixtures (read from `../python/fixtures`), units mirroring Python, OCR parity on 8 photos vs. Python goldens, ICU regex guard |
+| `core/src/test/` (JVM) | 58 | parser fixtures (`fixtures/text`), parser/layout units, noise filter, synthetic rendered label (0°/7°), OCR on the 8 photos (floors + similarity to the frozen golden output), ICU regex guard |
+| `app/src/androidTest/` (phone) | 2 | `DeviceScanTest`: each engine on a photo set through the app's own scan path; floors only for `images` |
 
 ---
 
@@ -144,9 +146,10 @@ app supplies `onnxruntime-android` — same `ai.onnxruntime` API.
 
 | Decision | Why |
 |---|---|
-| Python prototype first | No device or emulator on the VPS; Python can be tested end to end here. |
+| Python prototype first | No device or emulator on the VPS; Python could be tested end to end here. |
+| Python retired later | Once the Kotlin `core` matched it and ran on the JVM with the phone's exact results, a second parser only doubled the work. |
 | No emulator | No KVM; ARM64 images under software emulation crash-loop (no input devices in the guest kernel). Test on the user's phone over an adb tunnel instead. |
-| PP-OCR via ONNX (rapidocr) | Same model files in Python and on Android → prototype accuracy carries over. ML Kit has no Python. |
+| PP-OCR via ONNX (rapidocr) | Same model files on the desktop and on Android → accuracy measured here carries over. ML Kit can only be measured on a phone. |
 | PP-OCRv6 **small** | `medium` was no more accurate on the photos and 4× slower. One multilingual model handles accents (é, ô, ü). |
 | ML Kit kept as a toggle | To compare on real bottles before committing to one engine. |
 | No OpenCV on Android | Would add ~30 MB; the needed geometry is ~300 lines of Kotlin. |
@@ -154,11 +157,11 @@ app supplies `onnxruntime-android` — same `ai.onnxruntime` API.
 | arm64-v8a only | Covers essentially all current phones; halves native-library size. |
 | `TakePicture` intent instead of CameraX | No camera permission and no preview code; the system camera does the work. |
 | Models committed to git | Clone-and-build simplicity; each file < 100 MB. |
-| Shared fixtures, not copied | Kotlin tests read `../python/fixtures` so both languages always test the same cases. |
+| One fixtures folder | JVM tests, the CLI and the on-device test (as test-APK assets) all read `fixtures/`. |
 
 ## Measurements
 
-8 real photos (`python/fixtures/images`), 37 expected fields, 59 expected text snippets. VPS, 2 CPUs.
+8 real photos (`fixtures/images`), 37 expected fields, 59 expected text snippets. VPS, 2 CPUs. Python rows are from the retired prototype.
 
 | Pipeline | Fields | Text snippets | Notes |
 |---|---|---|---|
@@ -205,7 +208,7 @@ and falling `am_low_memory` counts in `adb logcat -b main,system`).
 The detector needs ~150 B per input pixel of native working memory (desktop ORT 1.31,
 1504×2016: +450–530 MB whatever the arena / memory-pattern / optimization-level / thread settings).
 
-Tried and rejected (Python, `--no-enhance`, full-res baseline 32/37 fields, 38/59 text):
+Tried and rejected (measured with the retired Python prototype, `--no-enhance`, full-res baseline 32/37 fields, 38/59 text):
 - **Cap the detector input's long side** (crops for recognition stay full-res): 1536 → 26/37, 1280 → 25/37, 1024 → 27/37, 960 → 27/37. Losses: schramsberg producer "Sthransbeng", ABV, volume, appellation; sainte_magdeleine appellation, country.
 - **Tiled detection** (overlapping tiles of the det tensor, stitched probability map): 1024/64 → 31/37 but only 1/8 identical raw text; 768/96 → 21/37. The model uses global context, so tiles don't reproduce the full-image output.
 
@@ -242,7 +245,6 @@ On the phone after the change:
 - **Low-memory kills leave no crash log** — see [Memory on the phone](#memory-on-the-phone).
 - **Caught exceptions are invisible** in `adb logcat AndroidRuntime:E` — that tag only logs crashes.
 - **Kotlin nests block comments**: `fixtures/text/*.json` inside KDoc broke compilation.
-- **rapidocr 3.x** requires enum values (`OCRVersion.PPOCRV6`, `ModelType`) for model params, not strings. Its default PP-OCRv6 model is multilingual; `lang_type="latin"` is rejected for v6.
 - **PP-OCR models expect BGR** channel order (rapidocr feeds OpenCV images).
 - The multilingual model "reads" ornaments as CJK characters → the short-low-confidence noise filter.
 - **Gradle** needs `JAVA_HOME`; a failed `:core:test` skips `:app:assembleDebug` in the same run.
@@ -255,13 +257,13 @@ On the phone after the change:
 ## Vinmonopolet test set
 
 26 product photos from Vinmonopolet (Norway's state retailer). **Copyrighted — never commit
-them**; `python/fixtures/vinmonopolet/` is gitignored. Recreate in a fresh clone:
+them**; `fixtures/vinmonopolet/` is gitignored. Recreate in a fresh clone:
 
 ```bash
-cd python && .venv/bin/python tools/fetch_vinmonopolet.py     # images + metadata.json + expected.json link
+python3 tools/fetch_vinmonopolet.py      # from the repo root: images + metadata.json + expected.json link
 ```
 
-The **hand-checked ground truth is committed** as `python/fixtures/vinmonopolet.expected.json`
+The **hand-checked ground truth is committed** as `fixtures/vinmonopolet.expected.json`
 (facts and short label snippets, no images). `fixtures/vinmonopolet/expected.json` is a symlink to it,
 created by the fetch script, so all tools read the one committed file. The shop's raw data
 (`metadata.json`, local only) differs from the labels in many places — never use it as ground truth.
@@ -273,9 +275,9 @@ Ground-truth rules used: score only what is printed on the front/neck label; vin
 brand is shown; country if printed or implied by a printed appellation.
 
 ```bash
-.venv/bin/winelabel eval fixtures/vinmonopolet --no-enhance                    # Python
-cd ../android && ./gradlew :core:test --tests winelabel.PpOcrParityTest -Pphotos=vinmonopolet   # JVM (scores in the test XML)
-./gradlew :app:assembleDebugAndroidTest -Pphotos=vinmonopolet                   # phone: then install + tools/device-test.sh
+cd android
+./gradlew -q :core:cli --args="eval fixtures/vinmonopolet"        # JVM, per-photo report
+./gradlew :app:assembleDebugAndroidTest -Pphotos=vinmonopolet     # phone: then install + tools/device-test.sh
 ```
 
 ## Testing on the user's phone
@@ -310,7 +312,7 @@ whatever the phone is pointing at.
 
 ## Adding a test case
 
-**From a debug report** (no photo): create `python/fixtures/text/<name>.json`:
+**From a debug report** (no photo): create `fixtures/text/<name>.json`:
 
 ```json
 {
@@ -323,38 +325,39 @@ whatever the phone is pointing at.
 `lines` are `[text, height(, confidence)]` in reading order — take `text`, `height` and
 `confidence` from the report's `lines`. Expected keys: `producer, vintage, appellation,
 classification (list), grapes (list), abv, volume_ml, country`; omit a key to not check it,
-use `null` to require "not found". Both `pytest` and `./gradlew :core:test` pick it up automatically.
+use `null` to require "not found". `./gradlew :core:test` (`ParserFixtureTest`) picks it up automatically.
 
-**From a photo**: add the image to `python/fixtures/images/`, an entry in
+**From a photo**: add the image to `fixtures/images/`, an entry in
 `expected.json` (fields plus `_text`: normalized snippets — lowercase, no accents or
 punctuation), and a row in `ATTRIBUTION.md` (only freely licensed photos; this repo is
-public). Then regenerate the Kotlin golden (below). Accuracy floors live in
-`tests/test_images.py` (Python) and `PpOcrParityTest.kt` (Kotlin).
+public). Add its golden OCR output (below). Accuracy floors live in `PpOcrParityTest.kt`
+(and `DeviceScanTest.kt` for the phone). Photos that can't be published go into a local-only
+folder like the Vinmonopolet set, with only their ground truth committed.
 
 ## Maintenance recipes
 
-Regenerate Kotlin goldens after changing photos or the Python OCR:
-
-```bash
-cd python
-for f in fixtures/images/*.jpg; do b=$(basename "$f" .jpg)
-  .venv/bin/python -m winelabel scan "$f" --json --no-enhance \
-    > ../android/core/src/test/resources/golden/$b.json
-done
-```
-
-Regenerate the recognizer alphabet after changing the rec model:
+Golden OCR output for a new photo (the existing goldens are frozen output of the retired Python
+prototype; `PpOcrParityTest` only checks mean text similarity ≥ 0.9, so don't regenerate them
+just because the pipeline changed slightly):
 
 ```bash
 cd android
-../python/.venv/bin/python -c "
-import onnxruntime as ort
-m = ort.InferenceSession('app/src/main/assets/models/PP-OCRv6_rec_small.onnx').get_modelmeta().custom_metadata_map['character']
-open('app/src/main/assets/models/ppocrv6_keys.txt', 'w', encoding='utf-8', newline='\n').write(m)"
+./gradlew -q :core:cli --args="scan fixtures/images/<photo>.jpg --json" > core/src/test/resources/golden/<photo>.json
 ```
 
-Models come from rapidocr's cache: `python/.venv/lib/python3*/site-packages/rapidocr/models/`
-(downloaded on first `winelabel scan`).
+Regenerate the recognizer alphabet after changing the rec model (needs the `onnx` package in a
+throwaway venv):
+
+```bash
+python3 -m venv /tmp/onnxenv && /tmp/onnxenv/bin/pip install -q onnx
+cd android && /tmp/onnxenv/bin/python -c "
+import onnx
+meta = {p.key: p.value for p in onnx.load('app/src/main/assets/models/PP-OCRv6_rec_small.onnx').metadata_props}
+open('app/src/main/assets/models/ppocrv6_keys.txt', 'w', encoding='utf-8', newline='\n').write(meta['character'])"
+```
+
+Models are rapidocr 3.10's ONNX conversions from its ModelScope repository, e.g.
+`https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.10.0/onnx/PP-OCRv6/det/PP-OCRv6_det_small.onnx`.
 
 Toolchain reinstall (user space): Temurin JDK 17 → `~/opt/jdk-17`; Android cmdline-tools →
 `~/Android/Sdk/cmdline-tools/latest`, then `sdkmanager "platforms;android-35" "build-tools;35.0.0" "platform-tools"`.

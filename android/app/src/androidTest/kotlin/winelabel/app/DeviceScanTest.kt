@@ -13,7 +13,7 @@ import winelabel.parse.Text
 import java.io.File
 
 /**
- * Both engines on the 8 photo fixtures (python/fixtures/images, packaged as test assets),
+ * Both engines on a photo set (fixtures/images, or -Pphotos=<folder>; packaged as test assets),
  * through the app's own code: AndroidImages.load (BitmapFactory + EXIF), Engines (models from
  * the APK assets, onnxruntime-android / ML Kit), Scanner, DebugReport. Catches what the JVM
  * tests can't: ICU regexes, native ONNX Runtime, asset loading, bitmap decoding.
@@ -110,7 +110,7 @@ class DeviceScanTest {
         else -> e
     }
 
-    /** Port of winelabel/evaluate.py values_equal. */
+    /** Same rules as core's cli Evaluate.valuesEqual (core's cli source set isn't on the app classpath). */
     private fun valuesEqual(expected: Any?, actual: Any?): Boolean = when {
         expected is List<*> -> actual is List<*> &&
             expected.map { it.toString() }.sorted() == actual.map { it.toString() }.sorted()

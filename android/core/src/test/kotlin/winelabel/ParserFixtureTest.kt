@@ -7,7 +7,7 @@ import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.TestFactory
 import winelabel.parse.LabelParser
 
-/** Runs every fixtures/text JSON case — the same cases tests/test_parser.py runs in Python. */
+/** Runs every JSON case in fixtures/text through the parser. */
 class ParserFixtureTest {
     @TestFactory
     fun sharedFixtures(): List<DynamicTest> {

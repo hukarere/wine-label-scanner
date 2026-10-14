@@ -1,12 +1,14 @@
 package winelabel
 
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import winelabel.layout.Layout
 import winelabel.model.OcrLine
 import winelabel.model.Point
 
-/** Mirrors tests/test_layout.py. */
+/** Reading order, row grouping, box geometry, noise filter. */
 class LayoutTest {
     @Test
     fun rowsAndOrder() {
@@ -30,5 +32,14 @@ class LayoutTest {
     @Test
     fun empty() {
         assertEquals("", Layout.rawText(emptyList()))
+    }
+
+    @Test
+    fun noiseFilter() {
+        fun line(text: String, conf: Double) = OcrLine.rect(text, conf, 0.0, 0.0, 10.0, 10.0)
+        assertTrue(Scanner.isNoise(line("里", 0.57)))   // ornament read as a CJK character
+        assertTrue(Scanner.isNoise(line("Da", 0.56)))
+        assertFalse(Scanner.isNoise(line("VQA", 0.6)))
+        assertFalse(Scanner.isNoise(line("DO", 0.95)))
     }
 }

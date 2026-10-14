@@ -19,8 +19,8 @@ import kotlin.math.sqrt
 
 /**
  * PP-OCRv6 (det + rec) and the PP-OCR text-orientation classifier on ONNX Runtime.
- * A port of rapidocr 3.x's pipeline with its default settings, so results match the
- * Python prototype. Uses only the `ai.onnxruntime` API, which is identical in the
+ * A port of rapidocr 3.x's pipeline with its default settings (rapidocr is the reference
+ * implementation of PP-OCR on ONNX). Uses only the `ai.onnxruntime` API, which is identical in the
  * desktop (`onnxruntime`) and Android (`onnxruntime-android`) artifacts.
  */
 class PpOcrEngine(
