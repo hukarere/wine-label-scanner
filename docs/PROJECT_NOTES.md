@@ -40,7 +40,7 @@ Prioritized; none started unless noted.
 
 0. ~~PP-OCR memory on 2–3 GB phones~~ — done (budgeted detector cap); watch `det_capped` in debug reports from real use.
 1. **Collect real-scan debug reports** → add as fixtures (see [Adding a test case](#adding-a-test-case)) → parser fixes.
-2. **Choose an engine** — measurements favour PP-OCR (31 vs 22/37, 77 vs 69/108); proposed: remove ML Kit (−12 MB, no network permissions). Awaiting the user's go-ahead.
+2. ~~Choose an engine~~ — decided 2026-10-14: **PP-OCR is the default; ML Kit stays as a user toggle** (fast option: 0.4 s vs 5 s per scan). Cost accepted: ~12 MB APK, its INTERNET/ACCESS_NETWORK_STATE permissions, ML Kit only testable on the phone — re-check it there occasionally (`tools/device-test.sh MLKIT`), not on every parser change.
 3. **Release build**: enable R8 (`isMinifyEnabled`, check ONNX Runtime keep rules), release signing key, smaller APK (~10 MB of debug dex goes away).
 4. **Capture quality**: in-app guidance; multi-shot for curved labels (left/centre/right photos, merge lines by text similarity).
 5. Producer extraction is the weakest field (decorative/script fonts). Ideas: prefer a producer-keyword line over the largest line more aggressively; use the photo's top third; fuzzy-join split rows.
@@ -151,7 +151,7 @@ app supplies `onnxruntime-android` — same `ai.onnxruntime` API.
 | No emulator | No KVM; ARM64 images under software emulation crash-loop (no input devices in the guest kernel). Test on the user's phone over an adb tunnel instead. |
 | PP-OCR via ONNX (rapidocr) | Same model files on the desktop and on Android → accuracy measured here carries over. ML Kit can only be measured on a phone. |
 | PP-OCRv6 **small** | `medium` was no more accurate on the photos and 4× slower. One multilingual model handles accents (é, ô, ü). |
-| ML Kit kept as a toggle | To compare on real bottles before committing to one engine. |
+| ML Kit kept as a toggle | First for comparison; then kept by the user's choice (2026-10-14) as the fast option, although PP-OCR is more accurate (31 vs 22/37, 77 vs 69/108). |
 | No OpenCV on Android | Would add ~30 MB; the needed geometry is ~300 lines of Kotlin. |
 | No CLAHE in Kotlin | On the 8 photos CLAHE traded 2 fields for 2 text snippets — no clear win. |
 | arm64-v8a only | Covers essentially all current phones; halves native-library size. |
