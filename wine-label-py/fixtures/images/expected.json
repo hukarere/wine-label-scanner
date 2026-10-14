@@ -1,0 +1,45 @@
+{
+  "schramsberg_2004.jpg": {
+    "producer": "Schramsberg", "vintage": 2004, "appellation": "North Coast", "abv": 12.9, "volume_ml": 750,
+    "country": "United States",
+    "_text": ["schramsberg", "founded 1862", "blanc de blancs", "methode", "champenoise", "brut", "vintage 2004",
+              "calistoga", "north coast sparkling wine", "750", "12 9%"]
+  },
+  "filhot_2008.jpg": {
+    "producer": "Château Filhot", "vintage": 2008, "appellation": "Sauternes",
+    "classification": ["AOC", "Grand Cru Classé"], "country": "France",
+    "_text": ["grand vin de bordeaux", "fonde en 1709", "grand cru classe en 1855", "chateau filhot",
+              "mis en bouteille au chateau", "sauternes", "2008", "appellation sauternes controlee", "vaucelles",
+              "produce of france"]
+  },
+  "dhom_riesling.jpg": {
+    "producer": "Christina Dhom", "vintage": null, "grapes": ["Riesling"],
+    "_text": ["christina", "dhom", "der riesling", "trocken"]
+  },
+  "greco_di_bianco_lowres.jpg": {
+    "vintage": 2001, "appellation": "Greco di Bianco",
+    "_text": ["greco di bianco", "2001"]
+  },
+  "poujeaux_1998.jpg": {
+    "producer": "Château Poujeaux", "vintage": 1998, "appellation": "Moulis", "classification": ["AOC"],
+    "country": "France",
+    "_text": ["chateau poujeaux", "moulis en medoc", "appellation moulis controlee", "1998", "jean", "theil",
+              "proprietaire a moulis", "produce of france", "mise en bouteille au chateau"]
+  },
+  "sainte_magdeleine_2018.jpg": {
+    "producer": "Sainte Magdeleine", "vintage": 2018, "appellation": "Côtes de Provence",
+    "classification": ["AOP"], "country": "France",
+    "_text": ["sainte magdeleine", "cotes de provence", "appellation d origine", "protegee", "2018",
+              "mis en bouteille au domaine", "famille sack zafiropulo", "vignerons"]
+  },
+  "barossa_shiraz_2006.jpg": {
+    "vintage": 2006, "appellation": "Barossa", "grapes": ["Shiraz"], "volume_ml": 750, "country": "Australia",
+    "_text": ["2006", "barossa", "shiraz", "750ml"]
+  },
+  "wismer_chardonnay_2017.jpg": {
+    "vintage": 2017, "grapes": ["Chardonnay"], "abv": 12.5, "volume_ml": 750, "country": "Canada",
+    "classification": ["VQA"],
+    "_text": ["2017", "chardonnay", "wismer foxcroft vineyard", "750 ml", "12 5% alc vol", "white wine vin blanc",
+              "vqa", "produced and bottled by", "hinterland wine company", "contains sulfites", "product of canada"]
+  }
+}

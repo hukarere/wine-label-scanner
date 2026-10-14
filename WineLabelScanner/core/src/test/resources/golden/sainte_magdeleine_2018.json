@@ -1,0 +1,124 @@
+{
+  "raw_text": "SAINTE MAGDE\nCotes de Provs\nAPPELLATION D'ORIGINE PROTEGE\n2018",
+  "fields": {
+    "producer": {
+      "value": "SAINTE MAGDE",
+      "confidence": 0.56,
+      "source": "SAINTE MAGDE"
+    },
+    "vintage": {
+      "value": 2018,
+      "confidence": 0.95,
+      "source": "2018"
+    },
+    "appellation": {
+      "value": "Côtes de Provence",
+      "confidence": 0.71,
+      "source": "Cotes de Provs"
+    },
+    "classification": null,
+    "grapes": null,
+    "abv": null,
+    "volume_ml": null,
+    "country": {
+      "value": "France",
+      "confidence": 0.43,
+      "source": "Cotes de Provs"
+    }
+  },
+  "lines": [
+    {
+      "text": "SAINTE MAGDE",
+      "confidence": 0.941,
+      "height": 297.9,
+      "box": [
+        [
+          390.0,
+          237.0
+        ],
+        [
+          1649.0,
+          443.0
+        ],
+        [
+          1601.0,
+          737.0
+        ],
+        [
+          342.0,
+          531.0
+        ]
+      ]
+    },
+    {
+      "text": "Cotes de Provs",
+      "confidence": 0.899,
+      "height": 285.4,
+      "box": [
+        [
+          551.0,
+          607.0
+        ],
+        [
+          1597.0,
+          770.0
+        ],
+        [
+          1553.0,
+          1052.0
+        ],
+        [
+          507.0,
+          889.0
+        ]
+      ]
+    },
+    {
+      "text": "APPELLATION D'ORIGINE PROTEGE",
+      "confidence": 0.981,
+      "height": 81.7,
+      "box": [
+        [
+          706.0,
+          935.0
+        ],
+        [
+          1515.0,
+          1037.0
+        ],
+        [
+          1504.0,
+          1118.0
+        ],
+        [
+          695.0,
+          1016.0
+        ]
+      ]
+    },
+    {
+      "text": "2018",
+      "confidence": 1.0,
+      "height": 124.4,
+      "box": [
+        [
+          1073.0,
+          1186.0
+        ],
+        [
+          1312.0,
+          1206.0
+        ],
+        [
+          1302.0,
+          1330.0
+        ],
+        [
+          1063.0,
+          1310.0
+        ]
+      ]
+    }
+  ],
+  "seconds": 3.62
+}

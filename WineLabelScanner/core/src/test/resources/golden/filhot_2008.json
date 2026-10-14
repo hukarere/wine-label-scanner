@@ -1,0 +1,315 @@
+{
+  "raw_text": "GRAND VIN DE BORDEAUX\nFondé en 1709 par Romain de Filhot\nGRAND CRU CLASSÉ EN 1855\nCHÂTEAU FILHOT\nMIS EN BOUTEILLE AU CHÂTEAU\nI3KI\nSAUTERNES\n2008\nAPPELLATION SAUTERNES CONTROLÉE\nComtes H. et G. de VAUCELLES\nSCEA. DU CHAU HTO SAUTERNES\nPRODUCE OF FRANCE",
+  "fields": {
+    "producer": {
+      "value": "CHÂTEAU FILHOT",
+      "confidence": 0.89,
+      "source": "CHÂTEAU FILHOT"
+    },
+    "vintage": {
+      "value": 2008,
+      "confidence": 0.95,
+      "source": "2008"
+    },
+    "appellation": {
+      "value": "Sauternes",
+      "confidence": 0.94,
+      "source": "APPELLATION SAUTERNES CONTROLÉE"
+    },
+    "classification": {
+      "value": [
+        "Grand Cru Classé",
+        "AOC"
+      ],
+      "confidence": 0.9,
+      "source": "GRAND CRU CLASSÉ EN 1855 / APPELLATION SAUTERNES CONTROLÉE"
+    },
+    "grapes": null,
+    "abv": null,
+    "volume_ml": null,
+    "country": {
+      "value": "France",
+      "confidence": 0.95,
+      "source": "PRODUCE OF FRANCE"
+    }
+  },
+  "lines": [
+    {
+      "text": "GRAND VIN DE BORDEAUX",
+      "confidence": 1.0,
+      "height": 18.0,
+      "box": [
+        [
+          96.0,
+          33.0
+        ],
+        [
+          272.0,
+          31.0
+        ],
+        [
+          272.0,
+          49.0
+        ],
+        [
+          96.0,
+          51.0
+        ]
+      ]
+    },
+    {
+      "text": "Fondé en 1709 par Romain de Filhot",
+      "confidence": 0.993,
+      "height": 16.0,
+      "box": [
+        [
+          96.0,
+          50.0
+        ],
+        [
+          274.0,
+          50.0
+        ],
+        [
+          274.0,
+          66.0
+        ],
+        [
+          96.0,
+          66.0
+        ]
+      ]
+    },
+    {
+      "text": "GRAND CRU CLASSÉ EN 1855",
+      "confidence": 0.999,
+      "height": 13.0,
+      "box": [
+        [
+          107.0,
+          67.0
+        ],
+        [
+          263.0,
+          67.0
+        ],
+        [
+          263.0,
+          80.0
+        ],
+        [
+          107.0,
+          80.0
+        ]
+      ]
+    },
+    {
+      "text": "CHÂTEAU FILHOT",
+      "confidence": 0.984,
+      "height": 92.0,
+      "box": [
+        [
+          6.0,
+          174.0
+        ],
+        [
+          369.0,
+          186.0
+        ],
+        [
+          367.0,
+          278.0
+        ],
+        [
+          3.0,
+          266.0
+        ]
+      ]
+    },
+    {
+      "text": "MIS EN BOUTEILLE AU CHÂTEAU",
+      "confidence": 0.976,
+      "height": 23.5,
+      "box": [
+        [
+          62.0,
+          283.0
+        ],
+        [
+          306.0,
+          284.0
+        ],
+        [
+          306.0,
+          308.0
+        ],
+        [
+          62.0,
+          306.0
+        ]
+      ]
+    },
+    {
+      "text": "I3KI",
+      "confidence": 0.56,
+      "height": 11.0,
+      "box": [
+        [
+          175.0,
+          429.0
+        ],
+        [
+          193.0,
+          429.0
+        ],
+        [
+          193.0,
+          440.0
+        ],
+        [
+          175.0,
+          440.0
+        ]
+      ]
+    },
+    {
+      "text": "SAUTERNES",
+      "confidence": 1.0,
+      "height": 34.0,
+      "box": [
+        [
+          60.0,
+          432.0
+        ],
+        [
+          314.0,
+          432.0
+        ],
+        [
+          314.0,
+          466.0
+        ],
+        [
+          60.0,
+          466.0
+        ]
+      ]
+    },
+    {
+      "text": "2008",
+      "confidence": 1.0,
+      "height": 20.0,
+      "box": [
+        [
+          157.0,
+          476.0
+        ],
+        [
+          209.0,
+          476.0
+        ],
+        [
+          209.0,
+          496.0
+        ],
+        [
+          157.0,
+          496.0
+        ]
+      ]
+    },
+    {
+      "text": "APPELLATION SAUTERNES CONTROLÉE",
+      "confidence": 0.995,
+      "height": 30.0,
+      "box": [
+        [
+          53.0,
+          535.0
+        ],
+        [
+          317.0,
+          535.0
+        ],
+        [
+          317.0,
+          565.0
+        ],
+        [
+          53.0,
+          565.0
+        ]
+      ]
+    },
+    {
+      "text": "Comtes H. et G. de VAUCELLES",
+      "confidence": 0.989,
+      "height": 22.0,
+      "box": [
+        [
+          114.0,
+          568.0
+        ],
+        [
+          256.0,
+          569.0
+        ],
+        [
+          256.0,
+          591.0
+        ],
+        [
+          114.0,
+          590.0
+        ]
+      ]
+    },
+    {
+      "text": "SCEA. DU CHAU HTO SAUTERNES",
+      "confidence": 0.658,
+      "height": 32.0,
+      "box": [
+        [
+          66.0,
+          576.0
+        ],
+        [
+          304.0,
+          576.0
+        ],
+        [
+          304.0,
+          608.0
+        ],
+        [
+          66.0,
+          608.0
+        ]
+      ]
+    },
+    {
+      "text": "PRODUCE OF FRANCE",
+      "confidence": 0.997,
+      "height": 18.0,
+      "box": [
+        [
+          123.0,
+          600.0
+        ],
+        [
+          247.0,
+          600.0
+        ],
+        [
+          247.0,
+          618.0
+        ],
+        [
+          123.0,
+          618.0
+        ]
+      ]
+    }
+  ],
+  "seconds": 1.39
+}

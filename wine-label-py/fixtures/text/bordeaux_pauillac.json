@@ -1,0 +1,26 @@
+{
+  "description": "Classic left-bank Bordeaux, French legal text",
+  "lines": [
+    ["GRAND VIN", 30],
+    ["Château Pichon Baron", 72],
+    ["PAUILLAC", 34],
+    ["2016", 40],
+    ["APPELLATION PAUILLAC CONTRÔLÉE", 18],
+    ["Grand Cru Classé en 1855", 18],
+    ["MIS EN BOUTEILLE AU CHÂTEAU", 14],
+    ["13,5% vol", 14],
+    ["750 ml", 14],
+    ["Produit de France", 12],
+    ["Contient des sulfites", 10]
+  ],
+  "expected": {
+    "producer": "Château Pichon Baron",
+    "vintage": 2016,
+    "appellation": "Pauillac",
+    "classification": ["AOC", "Grand Cru Classé"],
+    "grapes": null,
+    "abv": 13.5,
+    "volume_ml": 750,
+    "country": "France"
+  }
+}

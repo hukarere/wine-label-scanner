@@ -1,0 +1,130 @@
+{
+  "raw_text": "Greco di Bianco\nGreco di Bianco\n2001\nLACARINA",
+  "fields": {
+    "producer": {
+      "value": "LACARINA",
+      "confidence": 0.34,
+      "source": "LACARINA"
+    },
+    "vintage": {
+      "value": 2001,
+      "confidence": 0.95,
+      "source": "2001"
+    },
+    "appellation": {
+      "value": "Greco di Bianco",
+      "confidence": 0.7,
+      "source": "Greco di Bianco"
+    },
+    "classification": null,
+    "grapes": {
+      "value": [
+        "Greco"
+      ],
+      "confidence": 0.97,
+      "source": "Greco di Bianco"
+    },
+    "abv": null,
+    "volume_ml": null,
+    "country": {
+      "value": "Italy",
+      "confidence": 0.42,
+      "source": "Greco di Bianco"
+    }
+  },
+  "lines": [
+    {
+      "text": "Greco di Bianco",
+      "confidence": 0.966,
+      "height": 19.9,
+      "box": [
+        [
+          176.0,
+          238.0
+        ],
+        [
+          233.0,
+          254.0
+        ],
+        [
+          227.0,
+          273.0
+        ],
+        [
+          170.0,
+          257.0
+        ]
+      ]
+    },
+    {
+      "text": "Greco di Bianco",
+      "confidence": 0.997,
+      "height": 24.5,
+      "box": [
+        [
+          92.0,
+          338.0
+        ],
+        [
+          165.0,
+          342.0
+        ],
+        [
+          164.0,
+          366.0
+        ],
+        [
+          91.0,
+          363.0
+        ]
+      ]
+    },
+    {
+      "text": "2001",
+      "confidence": 1.0,
+      "height": 17.0,
+      "box": [
+        [
+          113.0,
+          376.0
+        ],
+        [
+          138.0,
+          377.0
+        ],
+        [
+          137.0,
+          394.0
+        ],
+        [
+          112.0,
+          393.0
+        ]
+      ]
+    },
+    {
+      "text": "LACARINA",
+      "confidence": 0.571,
+      "height": 8.1,
+      "box": [
+        [
+          110.0,
+          485.0
+        ],
+        [
+          142.0,
+          488.0
+        ],
+        [
+          141.0,
+          496.0
+        ],
+        [
+          109.0,
+          493.0
+        ]
+      ]
+    }
+  ],
+  "seconds": 1.17
+}

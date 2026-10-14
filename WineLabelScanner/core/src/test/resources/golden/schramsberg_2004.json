@@ -1,0 +1,224 @@
+{
+  "raw_text": "Schramsberg\nFOUNDED1862\nBLANC DE BLANCS\nMÉTHODE  BRUT\nCHAMPENOISE  VINTAGE 2004\n100%NORTHCOASTSPARKLINGWINE·750MLS·ALCOHOL 12.9%BYVOL",
+  "fields": {
+    "producer": {
+      "value": "Schramsberg",
+      "confidence": 0.6,
+      "source": "Schramsberg"
+    },
+    "vintage": {
+      "value": 2004,
+      "confidence": 0.95,
+      "source": "VINTAGE 2004"
+    },
+    "appellation": {
+      "value": "North Coast",
+      "confidence": 0.6,
+      "source": "100%NORTHCOASTSPARKLINGWINE·750MLS·ALCOHOL 12.9%BYVOL"
+    },
+    "classification": null,
+    "grapes": null,
+    "abv": {
+      "value": 12.9,
+      "confidence": 0.91,
+      "source": "100%NORTHCOASTSPARKLINGWINE·750MLS·ALCOHOL 12.9%BYVOL"
+    },
+    "volume_ml": {
+      "value": 750,
+      "confidence": 0.91,
+      "source": "100%NORTHCOASTSPARKLINGWINE·750MLS·ALCOHOL 12.9%BYVOL"
+    },
+    "country": {
+      "value": "United States",
+      "confidence": 0.36,
+      "source": "100%NORTHCOASTSPARKLINGWINE·750MLS·ALCOHOL 12.9%BYVOL"
+    }
+  },
+  "lines": [
+    {
+      "text": "Schramsberg",
+      "confidence": 0.996,
+      "height": 136.1,
+      "box": [
+        [
+          403.0,
+          1180.0
+        ],
+        [
+          1066.0,
+          1156.0
+        ],
+        [
+          1071.0,
+          1292.0
+        ],
+        [
+          408.0,
+          1316.0
+        ]
+      ]
+    },
+    {
+      "text": "FOUNDED1862",
+      "confidence": 1.0,
+      "height": 28.0,
+      "box": [
+        [
+          641.0,
+          1290.0
+        ],
+        [
+          777.0,
+          1290.0
+        ],
+        [
+          777.0,
+          1318.0
+        ],
+        [
+          641.0,
+          1318.0
+        ]
+      ]
+    },
+    {
+      "text": "BLANC DE BLANCS",
+      "confidence": 0.998,
+      "height": 50.5,
+      "box": [
+        [
+          502.0,
+          1394.0
+        ],
+        [
+          942.0,
+          1391.0
+        ],
+        [
+          942.0,
+          1441.0
+        ],
+        [
+          503.0,
+          1445.0
+        ]
+      ]
+    },
+    {
+      "text": "MÉTHODE",
+      "confidence": 0.995,
+      "height": 46.1,
+      "box": [
+        [
+          342.0,
+          1445.0
+        ],
+        [
+          462.0,
+          1454.0
+        ],
+        [
+          459.0,
+          1500.0
+        ],
+        [
+          339.0,
+          1491.0
+        ]
+      ]
+    },
+    {
+      "text": "BRUT",
+      "confidence": 1.0,
+      "height": 45.6,
+      "box": [
+        [
+          1048.0,
+          1447.0
+        ],
+        [
+          1120.0,
+          1444.0
+        ],
+        [
+          1123.0,
+          1489.0
+        ],
+        [
+          1050.0,
+          1493.0
+        ]
+      ]
+    },
+    {
+      "text": "CHAMPENOISE",
+      "confidence": 1.0,
+      "height": 43.6,
+      "box": [
+        [
+          342.0,
+          1492.0
+        ],
+        [
+          517.0,
+          1503.0
+        ],
+        [
+          515.0,
+          1546.0
+        ],
+        [
+          339.0,
+          1536.0
+        ]
+      ]
+    },
+    {
+      "text": "VINTAGE 2004",
+      "confidence": 1.0,
+      "height": 41.6,
+      "box": [
+        [
+          937.0,
+          1500.0
+        ],
+        [
+          1117.0,
+          1489.0
+        ],
+        [
+          1120.0,
+          1531.0
+        ],
+        [
+          939.0,
+          1541.0
+        ]
+      ]
+    },
+    {
+      "text": "100%NORTHCOASTSPARKLINGWINE·750MLS·ALCOHOL 12.9%BYVOL",
+      "confidence": 0.957,
+      "height": 57.0,
+      "box": [
+        [
+          370.0,
+          1623.0
+        ],
+        [
+          1089.0,
+          1621.0
+        ],
+        [
+          1089.0,
+          1678.0
+        ],
+        [
+          370.0,
+          1680.0
+        ]
+      ]
+    }
+  ],
+  "seconds": 2.25
+}

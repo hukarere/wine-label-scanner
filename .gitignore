@@ -1,0 +1,4 @@
+# Built APKs are distributed separately, not versioned
+*.apk
+*.apk.gz
+.DS_Store

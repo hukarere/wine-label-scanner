@@ -1,0 +1,266 @@
+# Region or appellation | country (canonical name from countries.txt)
+# Longer names win over shorter ones they contain (Chianti Classico > Chianti).
+Bordeaux|France
+Bordeaux Supérieur|France
+Médoc|France
+Haut-Médoc|France
+Pauillac|France
+Margaux|France
+Saint-Julien|France
+Saint-Estèphe|France
+Listrac-Médoc|France
+Moulis|France
+Pessac-Léognan|France
+Graves|France
+Sauternes|France
+Barsac|France
+Saint-Émilion|France
+Saint-Émilion Grand Cru|France
+Pomerol|France
+Lalande-de-Pomerol|France
+Fronsac|France
+Côtes de Bourg|France
+Blaye|France
+Entre-Deux-Mers|France
+Bourgogne|France
+Burgundy|France
+Chablis|France
+Petit Chablis|France
+Gevrey-Chambertin|France
+Morey-Saint-Denis|France
+Chambolle-Musigny|France
+Clos de Vougeot|France
+Vosne-Romanée|France
+Nuits-Saint-Georges|France
+Aloxe-Corton|France
+Corton-Charlemagne|France
+Beaune|France
+Pommard|France
+Volnay|France
+Meursault|France
+Puligny-Montrachet|France
+Chassagne-Montrachet|France
+Santenay|France
+Mercurey|France
+Givry|France
+Rully|France
+Pouilly-Fuissé|France
+Mâcon|France
+Mâcon-Villages|France
+Beaujolais|France
+Beaujolais-Villages|France
+Morgon|France
+Fleurie|France
+Moulin-à-Vent|France
+Brouilly|France
+Juliénas|France
+Côte de Beaune|France
+Côte de Nuits|France
+Côte de Nuits-Villages|France
+Champagne|France
+Côtes du Rhône|France
+Côtes du Rhône Villages|France
+Châteauneuf-du-Pape|France
+Gigondas|France
+Vacqueyras|France
+Hermitage|France
+Crozes-Hermitage|France
+Côte-Rôtie|France
+Condrieu|France
+Saint-Joseph|France
+Cornas|France
+Tavel|France
+Lirac|France
+Sancerre|France
+Pouilly-Fumé|France
+Vouvray|France
+Chinon|France
+Bourgueil|France
+Saumur|France
+Saumur-Champigny|France
+Muscadet|France
+Muscadet Sèvre et Maine|France
+Anjou|France
+Savennières|France
+Alsace|France
+Alsace Grand Cru|France
+Crémant d'Alsace|France
+Crémant de Bourgogne|France
+Crémant de Loire|France
+Languedoc|France
+Minervois|France
+Corbières|France
+Fitou|France
+Pic Saint-Loup|France
+Côtes de Provence|France
+Bandol|France
+Cahors|France
+Madiran|France
+Jurançon|France
+Bergerac|France
+Pays d'Oc|France
+Côtes de Gascogne|France
+Chianti|Italy
+Chianti Classico|Italy
+Chianti Rufina|Italy
+Brunello di Montalcino|Italy
+Rosso di Montalcino|Italy
+Vino Nobile di Montepulciano|Italy
+Montepulciano d'Abruzzo|Italy
+Bolgheri|Italy
+Toscana|Italy
+Barolo|Italy
+Barbaresco|Italy
+Langhe|Italy
+Roero|Italy
+Barbera d'Alba|Italy
+Barbera d'Asti|Italy
+Dolcetto d'Alba|Italy
+Gavi|Italy
+Asti|Italy
+Moscato d'Asti|Italy
+Piemonte|Italy
+Amarone della Valpolicella|Italy
+Valpolicella|Italy
+Valpolicella Ripasso|Italy
+Soave|Italy
+Bardolino|Italy
+Prosecco|Italy
+Conegliano Valdobbiadene|Italy
+Franciacorta|Italy
+Trentino|Italy
+Alto Adige|Italy
+Südtirol|Italy
+Collio|Italy
+Etna|Italy
+Sicilia|Italy
+Puglia|Italy
+Salice Salentino|Italy
+Primitivo di Manduria|Italy
+Taurasi|Italy
+Greco di Tufo|Italy
+Greco di Bianco|Italy
+Fiano di Avellino|Italy
+Vermentino di Sardegna|Italy
+Cannonau di Sardegna|Italy
+Orvieto|Italy
+Montefalco Sagrantino|Italy
+Verdicchio dei Castelli di Jesi|Italy
+Rioja|Spain
+Rioja Alta|Spain
+Rioja Alavesa|Spain
+Ribera del Duero|Spain
+Priorat|Spain
+Rías Baixas|Spain
+Rueda|Spain
+Toro|Spain
+Jumilla|Spain
+Navarra|Spain
+Penedès|Spain
+Cava|Spain
+Jerez|Spain
+Bierzo|Spain
+Montsant|Spain
+Calatayud|Spain
+Campo de Borja|Spain
+Valdepeñas|Spain
+La Mancha|Spain
+Somontano|Spain
+Douro|Portugal
+Porto|Portugal
+Dão|Portugal
+Alentejo|Portugal
+Vinho Verde|Portugal
+Bairrada|Portugal
+Lisboa|Portugal
+Madeira|Portugal
+Mosel|Germany
+Rheingau|Germany
+Rheinhessen|Germany
+Pfalz|Germany
+Nahe|Germany
+Franken|Germany
+Baden|Germany
+Württemberg|Germany
+Ahr|Germany
+Wachau|Austria
+Kamptal|Austria
+Kremstal|Austria
+Burgenland|Austria
+Niederösterreich|Austria
+Weinviertel|Austria
+Napa Valley|United States
+Sonoma|United States
+Sonoma Coast|United States
+Sonoma County|United States
+Russian River Valley|United States
+Alexander Valley|United States
+Dry Creek Valley|United States
+Carneros|United States
+Los Carneros|United States
+Paso Robles|United States
+Santa Barbara County|United States
+Sta. Rita Hills|United States
+Santa Cruz Mountains|United States
+Central Coast|United States
+Lodi|United States
+Mendocino|United States
+California|United States
+Oregon|United States
+Willamette Valley|United States
+Washington|United States
+Columbia Valley|United States
+Walla Walla Valley|United States
+Finger Lakes|United States
+Rutherford|United States
+Oakville|United States
+Stags Leap District|United States
+Howell Mountain|United States
+North Coast|United States
+Calistoga|United States
+Barossa|Australia
+Barossa Valley|Australia
+Eden Valley|Australia
+McLaren Vale|Australia
+Clare Valley|Australia
+Coonawarra|Australia
+Margaret River|Australia
+Hunter Valley|Australia
+Yarra Valley|Australia
+Adelaide Hills|Australia
+South Eastern Australia|Australia
+South Australia|Australia
+Marlborough|New Zealand
+Central Otago|New Zealand
+Hawke's Bay|New Zealand
+Martinborough|New Zealand
+Wairarapa|New Zealand
+Maipo Valley|Chile
+Colchagua Valley|Chile
+Casablanca Valley|Chile
+Aconcagua|Chile
+Rapel Valley|Chile
+Valle Central|Chile
+Central Valley|Chile
+Mendoza|Argentina
+Uco Valley|Argentina
+Valle de Uco|Argentina
+Luján de Cuyo|Argentina
+Salta|Argentina
+Cafayate|Argentina
+Stellenbosch|South Africa
+Paarl|South Africa
+Franschhoek|South Africa
+Swartland|South Africa
+Constantia|South Africa
+Western Cape|South Africa
+Walker Bay|South Africa
+Niagara Peninsula|Canada
+Prince Edward County|Canada
+Okanagan Valley|Canada
+Ontario|Canada
+British Columbia|Canada
+Tokaj|Hungary
+Santorini|Greece
+Naoussa|Greece
+Nemea|Greece

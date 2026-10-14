@@ -1,0 +1,25 @@
+# Canonical name first, then aliases, separated by |
+France|Francia|Frankreich|Frankrijk|França
+Italy|Italia|Italie|Italien
+Spain|España|Espagne|Spanien|Spagna
+Portugal
+Germany|Deutschland|Allemagne|Germania|Alemania
+Austria|Österreich|Autriche
+United States|USA|United States of America
+Australia|Australie|Australien
+New Zealand|Nouvelle-Zélande|Neuseeland
+Chile|Chili
+Argentina|Argentine|Argentinien
+South Africa|Afrique du Sud|Südafrika|Sudáfrica
+Hungary|Magyarország|Hongrie|Ungarn
+Greece|Hellas|Grèce|Griechenland
+Canada
+Uruguay
+Lebanon|Liban
+Israel
+Moldova
+Romania|România|Roumanie
+Bulgaria
+Croatia|Hrvatska
+Slovenia|Slovenija
+Switzerland|Suisse|Schweiz|Svizzera

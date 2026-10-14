@@ -1,0 +1,278 @@
+{
+  "raw_text": "7 chardonna\n2017  wWismerk yorr-rd\n750 mL\n12.5% ALC./VOL.\nWHITE WINE/VIN BLANC\nVQA\nPRODLTE  BLERY\nHILLIER ON KOK 2J0\n613.399.2903",
+  "fields": {
+    "producer": {
+      "value": "7 chardonna",
+      "confidence": 0.55,
+      "source": "7 chardonna"
+    },
+    "vintage": {
+      "value": 2017,
+      "confidence": 0.95,
+      "source": "2017"
+    },
+    "appellation": null,
+    "classification": {
+      "value": [
+        "VQA"
+      ],
+      "confidence": 0.9,
+      "source": "VQA"
+    },
+    "grapes": {
+      "value": [
+        "Chardonnay"
+      ],
+      "confidence": 0.88,
+      "source": "7 chardonna"
+    },
+    "abv": {
+      "value": 12.5,
+      "confidence": 0.95,
+      "source": "12.5% ALC./VOL."
+    },
+    "volume_ml": {
+      "value": 750,
+      "confidence": 0.94,
+      "source": "750 mL"
+    },
+    "country": {
+      "value": "Canada",
+      "confidence": 0.5,
+      "source": "VQA"
+    }
+  },
+  "lines": [
+    {
+      "text": "7 chardonna",
+      "confidence": 0.924,
+      "height": 295.7,
+      "box": [
+        [
+          430.0,
+          472.0
+        ],
+        [
+          1535.0,
+          211.0
+        ],
+        [
+          1602.0,
+          499.0
+        ],
+        [
+          497.0,
+          760.0
+        ]
+      ]
+    },
+    {
+      "text": "2017",
+      "confidence": 1.0,
+      "height": 169.2,
+      "box": [
+        [
+          294.0,
+          558.0
+        ],
+        [
+          534.0,
+          507.0
+        ],
+        [
+          569.0,
+          672.0
+        ],
+        [
+          329.0,
+          724.0
+        ]
+      ]
+    },
+    {
+      "text": "wWismerk yorr-rd",
+      "confidence": 0.528,
+      "height": 179.2,
+      "box": [
+        [
+          467.0,
+          670.0
+        ],
+        [
+          1509.0,
+          413.0
+        ],
+        [
+          1552.0,
+          587.0
+        ],
+        [
+          510.0,
+          844.0
+        ]
+      ]
+    },
+    {
+      "text": "750 mL",
+      "confidence": 0.984,
+      "height": 117.4,
+      "box": [
+        [
+          888.0,
+          732.0
+        ],
+        [
+          1283.0,
+          628.0
+        ],
+        [
+          1313.0,
+          742.0
+        ],
+        [
+          918.0,
+          845.0
+        ]
+      ]
+    },
+    {
+      "text": "12.5% ALC./VOL.",
+      "confidence": 0.998,
+      "height": 82.8,
+      "box": [
+        [
+          835.0,
+          849.0
+        ],
+        [
+          1341.0,
+          712.0
+        ],
+        [
+          1362.0,
+          792.0
+        ],
+        [
+          857.0,
+          929.0
+        ]
+      ]
+    },
+    {
+      "text": "WHITE WINE/VIN BLANC",
+      "confidence": 0.972,
+      "height": 103.6,
+      "box": [
+        [
+          774.0,
+          917.0
+        ],
+        [
+          1406.0,
+          742.0
+        ],
+        [
+          1433.0,
+          842.0
+        ],
+        [
+          801.0,
+          1017.0
+        ]
+      ]
+    },
+    {
+      "text": "VQA",
+      "confidence": 0.999,
+      "height": 98.8,
+      "box": [
+        [
+          1227.0,
+          973.0
+        ],
+        [
+          1415.0,
+          897.0
+        ],
+        [
+          1451.0,
+          989.0
+        ],
+        [
+          1263.0,
+          1065.0
+        ]
+      ]
+    },
+    {
+      "text": "PRODLTE  BLERY",
+      "confidence": 0.501,
+      "height": 98.8,
+      "box": [
+        [
+          874.0,
+          1275.0
+        ],
+        [
+          1449.0,
+          1098.0
+        ],
+        [
+          1478.0,
+          1192.0
+        ],
+        [
+          903.0,
+          1370.0
+        ]
+      ]
+    },
+    {
+      "text": "HILLIER ON KOK 2J0",
+      "confidence": 0.974,
+      "height": 75.9,
+      "box": [
+        [
+          1011.0,
+          1420.0
+        ],
+        [
+          1410.0,
+          1286.0
+        ],
+        [
+          1434.0,
+          1358.0
+        ],
+        [
+          1035.0,
+          1492.0
+        ]
+      ]
+    },
+    {
+      "text": "613.399.2903",
+      "confidence": 0.999,
+      "height": 59.3,
+      "box": [
+        [
+          1094.0,
+          1436.0
+        ],
+        [
+          1358.0,
+          1360.0
+        ],
+        [
+          1374.0,
+          1417.0
+        ],
+        [
+          1111.0,
+          1493.0
+        ]
+      ]
+    }
+  ],
+  "seconds": 3.29
+}

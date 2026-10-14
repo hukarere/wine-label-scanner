@@ -1,0 +1,23 @@
+{
+  "description": "US label, producer without keyword, 'Alc. ... by vol.' format",
+  "lines": [
+    ["STAG'S LEAP", 22],
+    ["SILVER OAK", 64],
+    ["2017", 30],
+    ["NAPA VALLEY", 26],
+    ["CABERNET SAUVIGNON", 22],
+    ["PRODUCED AND BOTTLED BY SILVER OAK CELLARS, OAKVILLE, CA", 9],
+    ["ALC. 14.2% BY VOL.", 10],
+    ["750ML", 10],
+    ["Est. 1972", 10]
+  ],
+  "expected": {
+    "producer": "SILVER OAK",
+    "vintage": 2017,
+    "appellation": "Napa Valley",
+    "grapes": ["Cabernet Sauvignon"],
+    "abv": 14.2,
+    "volume_ml": 750,
+    "country": "United States"
+  }
+}

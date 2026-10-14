@@ -1,0 +1,125 @@
+# One grape variety per line. Matching is case- and accent-insensitive.
+# Longer names win over shorter ones they contain (Cabernet Sauvignon > Sauvignon).
+Cabernet Sauvignon
+Cabernet Franc
+Merlot
+Malbec
+Petit Verdot
+Carménère
+Pinot Noir
+Pinot Meunier
+Meunier
+Pinot Gris
+Pinot Grigio
+Pinot Blanc
+Pinot Bianco
+Chardonnay
+Sauvignon Blanc
+Sauvignon Gris
+Sémillon
+Muscadelle
+Syrah
+Shiraz
+Petite Sirah
+Grenache
+Grenache Blanc
+Garnacha
+Mourvèdre
+Monastrell
+Mataro
+Cinsault
+Carignan
+Cariñena
+Tempranillo
+Tinta Roriz
+Aragonez
+Tinto Fino
+Graciano
+Mazuelo
+Viura
+Macabeo
+Verdejo
+Albariño
+Alvarinho
+Godello
+Mencía
+Bobal
+Sangiovese
+Nebbiolo
+Barbera
+Dolcetto
+Corvina
+Corvinone
+Rondinella
+Molinara
+Montepulciano
+Aglianico
+Nero d'Avola
+Primitivo
+Zinfandel
+Negroamaro
+Lambrusco
+Trebbiano
+Vermentino
+Garganega
+Glera
+Fiano
+Greco
+Falanghina
+Cortese
+Arneis
+Lagrein
+Teroldego
+Sagrantino
+Verdicchio
+Riesling
+Gewürztraminer
+Grüner Veltliner
+Müller-Thurgau
+Silvaner
+Sylvaner
+Spätburgunder
+Grauburgunder
+Weissburgunder
+Blaufränkisch
+Zweigelt
+Lemberger
+Dornfelder
+Trollinger
+Kerner
+Scheurebe
+Chenin Blanc
+Viognier
+Marsanne
+Roussanne
+Muscat
+Moscato
+Moscatel
+Melon de Bourgogne
+Gamay
+Aligoté
+Pinotage
+Touriga Nacional
+Touriga Franca
+Tinta Barroca
+Baga
+Castelão
+Arinto
+Loureiro
+Fernão Pires
+Tannat
+Petit Manseng
+Gros Manseng
+Colombard
+Ugni Blanc
+Furmint
+Hárslevelű
+Assyrtiko
+Xinomavro
+Agiorgitiko
+Saperavi
+Rkatsiteli
+Torrontés
+Bonarda
+Plavac Mali
+Kadarka

@@ -1,0 +1,130 @@
+{
+  "raw_text": "2006\nBAROSSA\nSHIRAZ\n750mL",
+  "fields": {
+    "producer": null,
+    "vintage": {
+      "value": 2006,
+      "confidence": 0.91,
+      "source": "2006"
+    },
+    "appellation": {
+      "value": "Barossa",
+      "confidence": 0.64,
+      "source": "BAROSSA"
+    },
+    "classification": null,
+    "grapes": {
+      "value": [
+        "Shiraz"
+      ],
+      "confidence": 1.0,
+      "source": "SHIRAZ"
+    },
+    "abv": null,
+    "volume_ml": {
+      "value": 750,
+      "confidence": 0.95,
+      "source": "750mL"
+    },
+    "country": {
+      "value": "Australia",
+      "confidence": 0.38,
+      "source": "BAROSSA"
+    }
+  },
+  "lines": [
+    {
+      "text": "2006",
+      "confidence": 0.963,
+      "height": 57.1,
+      "box": [
+        [
+          792.0,
+          234.0
+        ],
+        [
+          945.0,
+          227.0
+        ],
+        [
+          948.0,
+          284.0
+        ],
+        [
+          795.0,
+          291.0
+        ]
+      ]
+    },
+    {
+      "text": "BAROSSA",
+      "confidence": 0.91,
+      "height": 50.0,
+      "box": [
+        [
+          738.0,
+          317.0
+        ],
+        [
+          1028.0,
+          307.0
+        ],
+        [
+          1030.0,
+          357.0
+        ],
+        [
+          740.0,
+          367.0
+        ]
+      ]
+    },
+    {
+      "text": "SHIRAZ",
+      "confidence": 0.999,
+      "height": 51.0,
+      "box": [
+        [
+          744.0,
+          392.0
+        ],
+        [
+          1019.0,
+          382.0
+        ],
+        [
+          1021.0,
+          433.0
+        ],
+        [
+          746.0,
+          443.0
+        ]
+      ]
+    },
+    {
+      "text": "750mL",
+      "confidence": 0.999,
+      "height": 74.0,
+      "box": [
+        [
+          805.0,
+          512.0
+        ],
+        [
+          947.0,
+          512.0
+        ],
+        [
+          947.0,
+          586.0
+        ],
+        [
+          805.0,
+          586.0
+        ]
+      ]
+    }
+  ],
+  "seconds": 3.67
+}

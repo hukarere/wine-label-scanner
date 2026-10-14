@@ -1,0 +1,118 @@
+{
+  "raw_text": "Christina  Dhom\nDer Riesling\ntrocken",
+  "fields": {
+    "producer": {
+      "value": "Christina Dhom",
+      "confidence": 0.53,
+      "source": "Christina | Dhom"
+    },
+    "vintage": null,
+    "appellation": null,
+    "classification": null,
+    "grapes": {
+      "value": [
+        "Riesling"
+      ],
+      "confidence": 1.0,
+      "source": "Der Riesling"
+    },
+    "abv": null,
+    "volume_ml": null,
+    "country": null
+  },
+  "lines": [
+    {
+      "text": "Christina",
+      "confidence": 0.974,
+      "height": 277.8,
+      "box": [
+        [
+          335.0,
+          433.0
+        ],
+        [
+          903.0,
+          489.0
+        ],
+        [
+          876.0,
+          766.0
+        ],
+        [
+          308.0,
+          709.0
+        ]
+      ]
+    },
+    {
+      "text": "Dhom",
+      "confidence": 0.878,
+      "height": 269.2,
+      "box": [
+        [
+          941.0,
+          422.0
+        ],
+        [
+          1292.0,
+          504.0
+        ],
+        [
+          1232.0,
+          766.0
+        ],
+        [
+          882.0,
+          685.0
+        ]
+      ]
+    },
+    {
+      "text": "Der Riesling",
+      "confidence": 1.0,
+      "height": 141.2,
+      "box": [
+        [
+          492.0,
+          1659.0
+        ],
+        [
+          1058.0,
+          1688.0
+        ],
+        [
+          1051.0,
+          1829.0
+        ],
+        [
+          485.0,
+          1800.0
+        ]
+      ]
+    },
+    {
+      "text": "trocken",
+      "confidence": 1.0,
+      "height": 68.0,
+      "box": [
+        [
+          675.0,
+          1797.0
+        ],
+        [
+          863.0,
+          1797.0
+        ],
+        [
+          863.0,
+          1865.0
+        ],
+        [
+          675.0,
+          1865.0
+        ]
+      ]
+    }
+  ],
+  "seconds": 3.17
+}

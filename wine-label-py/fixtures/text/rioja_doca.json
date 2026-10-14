@@ -1,0 +1,25 @@
+{
+  "description": "Rioja Gran Reserva with OCR slip in the grape name",
+  "lines": [
+    ["BODEGAS MUGA", 40],
+    ["PRADO ENEA", 60],
+    ["GRAN RESERVA", 26],
+    ["2014", 30],
+    ["RIOJA", 28],
+    ["DENOMINACIÓN DE ORIGEN CALIFICADA", 11],
+    ["Tempranilo, Garnacha, Mazuelo, Graciano", 11],
+    ["Embotellado por Bodegas Muga S.A. Haro - España", 9],
+    ["14% vol", 11],
+    ["750 ml", 11]
+  ],
+  "expected": {
+    "producer": "BODEGAS MUGA",
+    "vintage": 2014,
+    "appellation": "Rioja",
+    "classification": ["DOCa", "Gran Reserva"],
+    "grapes": ["Tempranillo", "Garnacha", "Mazuelo", "Graciano"],
+    "abv": 14.0,
+    "volume_ml": 750,
+    "country": "Spain"
+  }
+}

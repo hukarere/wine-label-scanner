@@ -1,0 +1,26 @@
+{
+  "description": "German Prädikatswein with Weingut and Kabinett",
+  "lines": [
+    ["Weingut Dr. Loosen", 34],
+    ["2021", 22],
+    ["Wehlener Sonnenuhr", 30],
+    ["Riesling Kabinett", 26],
+    ["Mosel", 22],
+    ["Prädikatswein", 14],
+    ["Gutsabfüllung", 10],
+    ["8,5% vol", 10],
+    ["0,75 l", 10],
+    ["Product of Germany", 9],
+    ["Enthält Sulfite", 9]
+  ],
+  "expected": {
+    "producer": "Weingut Dr. Loosen",
+    "vintage": 2021,
+    "appellation": "Mosel",
+    "classification": ["Prädikatswein", "Kabinett"],
+    "grapes": ["Riesling"],
+    "abv": 8.5,
+    "volume_ml": 750,
+    "country": "Germany"
+  }
+}

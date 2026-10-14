@@ -1,0 +1,23 @@
+{
+  "description": "Burgundy Premier Cru, domaine name, cl volume",
+  "lines": [
+    ["DOMAINE FAIVELEY", 44],
+    ["GEVREY-CHAMBERTIN", 52],
+    ["1er Cru", 30],
+    ["\"Les Cazetiers\"", 26],
+    ["APPELLATION GEVREY-CHAMBERTIN 1ER CRU CONTRÔLÉE", 14],
+    ["2019", 28],
+    ["75 cl", 12],
+    ["13% vol.", 12],
+    ["Mis en bouteille par Faiveley à Nuits-Saint-Georges, France", 10]
+  ],
+  "expected": {
+    "producer": "DOMAINE FAIVELEY",
+    "vintage": 2019,
+    "appellation": "Gevrey-Chambertin",
+    "classification": ["AOC", "Premier Cru"],
+    "abv": 13.0,
+    "volume_ml": 750,
+    "country": "France"
+  }
+}

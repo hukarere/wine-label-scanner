@@ -1,0 +1,21 @@
+{
+  "description": "New Zealand, ABV without 'vol', vintage in sentence",
+  "lines": [
+    ["CLOUDY BAY", 70],
+    ["SAUVIGNON BLANC", 28],
+    ["MARLBOROUGH", 22],
+    ["Vintage 2023", 16],
+    ["WINE OF NEW ZEALAND", 12],
+    ["13.5%", 12],
+    ["750mL", 12]
+  ],
+  "expected": {
+    "producer": "CLOUDY BAY",
+    "vintage": 2023,
+    "appellation": "Marlborough",
+    "grapes": ["Sauvignon Blanc"],
+    "abv": 13.5,
+    "volume_ml": 750,
+    "country": "New Zealand"
+  }
+}

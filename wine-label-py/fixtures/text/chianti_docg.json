@@ -1,0 +1,24 @@
+{
+  "description": "Italian DOCG Riserva with grape blend on back-label style text",
+  "lines": [
+    ["CASTELLO DI AMA", 50],
+    ["CHIANTI CLASSICO", 36],
+    ["Denominazione di Origine Controllata e Garantita", 12],
+    ["RISERVA", 22],
+    ["2018", 26],
+    ["Sangiovese 80% Merlot 20%", 14],
+    ["Imbottigliato all'origine da Castello di Ama - Gaiole in Chianti - Italia", 9],
+    ["14% vol", 12],
+    ["e 0,75 L", 12]
+  ],
+  "expected": {
+    "producer": "CASTELLO DI AMA",
+    "vintage": 2018,
+    "appellation": "Chianti Classico",
+    "classification": ["DOCG", "Riserva"],
+    "grapes": ["Sangiovese", "Merlot"],
+    "abv": 14.0,
+    "volume_ml": 750,
+    "country": "Italy"
+  }
+}

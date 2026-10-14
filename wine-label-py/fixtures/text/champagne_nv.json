@@ -1,0 +1,22 @@
+{
+  "description": "Non-vintage Champagne: founding year must not be read as vintage",
+  "lines": [
+    ["CHAMPAGNE", 26],
+    ["VEUVE CLICQUOT", 58],
+    ["PONSARDIN", 30],
+    ["Maison fondée en 1772", 12],
+    ["BRUT", 26],
+    ["12% vol", 10],
+    ["750 ml", 10],
+    ["Élaboré par Veuve Clicquot Ponsardin, Reims, France", 9]
+  ],
+  "expected": {
+    "producer": "VEUVE CLICQUOT",
+    "vintage": null,
+    "appellation": "Champagne",
+    "grapes": null,
+    "abv": 12.0,
+    "volume_ml": 750,
+    "country": "France"
+  }
+}
