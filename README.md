@@ -27,6 +27,12 @@ cd WineLabelScanner
 ./gradlew :app:assembleDebug  # app/build/outputs/apk/debug/app-debug.apk
 ```
 
+## Working on this project
+
+Start with [`AGENTS.md`](AGENTS.md) (environment, commands, rules; Claude Code loads it via
+`CLAUDE.md`). History, decisions, measurements, status and roadmap are in
+[`docs/PROJECT_NOTES.md`](docs/PROJECT_NOTES.md).
+
 ## Third-party content
 
 - OCR models in `WineLabelScanner/app/src/main/assets/models/`: PaddleOCR PP-OCRv6 and
