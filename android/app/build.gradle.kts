@@ -16,7 +16,11 @@ android {
         versionName = "0.1.0"
         // Virtually all phones since ~2017 are arm64; keeps the APK small.
         ndk { abiFilters += "arm64-v8a" }
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
+
+    // On-device test (DeviceScanTest) reads the shared photo fixtures as test-APK assets.
+    sourceSets["androidTest"].assets.srcDir(rootProject.file("../python/fixtures/images"))
 
     buildTypes {
         debug { isMinifyEnabled = false }
@@ -49,4 +53,8 @@ dependencies {
     implementation(platform(libs.compose.bom))
     implementation(libs.compose.ui)
     implementation(libs.compose.material3)
+
+    androidTestImplementation(libs.junit4)
+    androidTestImplementation(libs.androidx.test.runner)
+    androidTestImplementation(libs.androidx.test.junit)
 }

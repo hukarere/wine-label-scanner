@@ -25,7 +25,7 @@ docs/PROJECT_NOTES.md history, architecture, decisions, numbers, gotchas, roadma
 ## Environment (the dev VPS)
 
 - **No Android device and no emulator** (no KVM; an ARM64 emulator under software emulation was tried and fails — see PROJECT_NOTES timeline 16). Everything testable runs on the JVM or
-  in Python here. The user installs APKs on their own phone and reports back.
+  in Python here, plus the user's real phone when they open the adb tunnel (below).
 - JDK 17: `export JAVA_HOME=~/opt/jdk-17` (not on PATH by default — Gradle fails without it).
 - Android SDK: `~/Android/Sdk` (referenced by `android/local.properties`, gitignored;
   in a fresh clone set `ANDROID_HOME=~/Android/Sdk`).
@@ -74,10 +74,17 @@ copy a stale APK.
 6. In the app, every caught exception must be logged with `Log.e("WineLabel", …)` and shown
    via `UiState.Error(message, details)` — logcat's `AndroidRuntime` tag only shows crashes.
 7. KDoc/comments: don't write `/*` inside `/** */` (Kotlin nests comments → "Unclosed comment").
+8. No locale-dependent number formatting in data (`"%.2f".format(x).toDouble()` breaks in ru/de/fr).
+9. Memory: the user's phone has 2.7 GB RAM; the app's ONNX engine uses `Config(lowMemory = true)`.
+   Check peak memory with `tools/device-test.sh` after pipeline changes.
 
 ## Feedback loop with the user (no device here)
 
-- User installs: `adb install -r wine-label-scanner-debug.apk` (they scp it from the VPS).
+- **Preferred:** the user opens an SSH reverse tunnel to their adb server
+  (`ssh -N -R 5038:localhost:5037 grg@<vps>`); then `adb -P 5038 …` here reaches their phone
+  (Android 10, 2.7 GB RAM). Install, run `android/tools/device-test.sh`, read logcat yourself —
+  see PROJECT_NOTES "Testing on the user's phone". Check with `adb -P 5038 devices` first.
+- Otherwise the user installs: `adb install -r wine-label-scanner-debug.apk` (they scp it from the VPS).
 - They send back one of: the app's **Copy debug report** JSON (engine, timings, every OCR
   line with box/confidence, fields), **Copy error details** (stack trace), or
   `adb logcat WineLabel:E AndroidRuntime:E '*:S'`.

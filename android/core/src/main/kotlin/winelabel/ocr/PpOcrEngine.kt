@@ -47,6 +47,12 @@ class PpOcrEngine(
         val widthHeightRatio: Double = 8.0,
         val batch: Int = 6,
         val threads: Int = 0,             // 0 = ONNX Runtime default
+        /**
+         * Phones: don't keep ONNX Runtime's CPU memory arena (it holds the peak of the largest
+         * run, ~hundreds of MB for the detector) and don't pre-plan memory patterns.
+         * Same results, a little slower; see PROJECT_NOTES "Memory on the phone".
+         */
+        val lowMemory: Boolean = false,
     )
 
     override val name = "PP-OCRv6 (ONNX)"
@@ -54,6 +60,10 @@ class PpOcrEngine(
     private val env = OrtEnvironment.getEnvironment()
     private val options = OrtSession.SessionOptions().apply {
         if (config.threads > 0) setIntraOpNumThreads(config.threads)
+        if (config.lowMemory) {
+            setCPUArenaAllocator(false)
+            setMemoryPatternOptimization(false)
+        }
     }
     private val det = env.createSession(detModel, options)
     private val cls = env.createSession(clsModel, options)

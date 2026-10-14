@@ -9,6 +9,7 @@ Detailed record for resuming work. The short operational brief is [`AGENTS.md`](
 - [Key decisions](#key-decisions)
 - [Measurements](#measurements)
 - [Gotchas](#gotchas-found-the-hard-way)
+- [Testing on the user's phone](#testing-on-the-users-phone)
 - [Adding a test case](#adding-a-test-case)
 - [Maintenance recipes](#maintenance-recipes)
 
@@ -20,20 +21,21 @@ Detailed record for resuming work. The short operational brief is [`AGENTS.md`](
 |---|---|
 | Python prototype | Done. 57 tests pass. |
 | Kotlin `core` | Done. 55 JVM tests pass, including OCR on the 8 real photos (parity with Python). |
-| Android app | Builds (debug, arm64-v8a, 74 MB), lint clean. **Installed on the user's phone.** |
-| On-device | The first run crashed every scan (`PatternSyntaxException`, ICU inline flags) — **fixed** in the current APK. **Awaiting the user's first real scan results with both engines.** |
+| Android app | Builds (debug, arm64-v8a, 74 MB), lint clean. Installed on the user's phone (Honor 10 Lite HRY-LX1, Android 10, **2.7 GB RAM**, ru locale). |
+| On-device | Tested directly from the VPS over an adb tunnel ([Testing on the user's phone](#testing-on-the-users-phone)). `DeviceScanTest` runs both engines on the 8 photos. Fixed: ICU regex crash, locale crash in the debug report. **Open: PP-OCR runs out of memory on camera-sized photos** (see [Memory on the phone](#memory-on-the-phone)); decision pending with the user. |
 | Repo | github.com/hukarere/wine-label-scanner (public). No LICENSE yet. APK not published as a Release. |
 
-**Not yet verified anywhere:** on-device speed and memory, ML Kit engine quality, the
-camera → TakePicture flow end to end, the share-into-app intent, dark theme look.
+**Not yet verified anywhere:** the camera → TakePicture flow end to end, the
+share-into-app intent, dark theme look, the UI flow driven by taps.
 
-**Next expected input from the user:** debug reports (JSON) from scanning real bottles with
-both engines → convert to fixtures → fix → decide which engine to keep.
+**Next:** decide how to fit PP-OCR into the phone's memory (options in
+[Memory on the phone](#memory-on-the-phone)), then real-bottle scans → fixtures → choose the engine.
 
 ## Roadmap
 
 Prioritized; none started unless noted.
 
+0. **PP-OCR memory on 2–3 GB phones** — decide between the options in [Memory on the phone](#memory-on-the-phone) (blocks real use of the ONNX engine on the user's phone).
 1. **Collect real-scan debug reports** → add as fixtures (see [Adding a test case](#adding-a-test-case)) → parser fixes in both languages.
 2. **Choose an engine** (PP-OCR ONNX vs ML Kit) from on-device results; drop the other to cut 12–18 MB.
 3. **Release build**: enable R8 (`isMinifyEnabled`, check ONNX Runtime keep rules), release signing key, smaller APK (~10 MB of debug dex goes away).
@@ -68,6 +70,7 @@ Prioritized; none started unless noted.
 14. Added `AGENTS.md`, `CLAUDE.md` (imports AGENTS.md) and this file.
 15. Renamed the subproject folders for consistency: `wine-label-py/` → `python/`, `WineLabelScanner/` → `android/` (the Gradle project name `WineLabelScanner` and Python package `winelabel` are unchanged).
 16. Tried a headless **ARM64 emulator under software emulation** (no KVM) to test without the user. Emulator ≥ 31 refuses arm64 images on an x86_64 host; 30.4.5 boots the Android 10 (API 29) `google_apis` image, but `system_server` crash-loops (SIGABRT) because the guest kernel binds no input device (virtio-input over MMIO needs a modern virtio transport this qemu lacks; `goldfish-events` has no driver). **Abandoned and deleted** (emulator, system images, AVDs). Next approach: drive the user's real phone (Android 10) from the VPS through an SSH reverse tunnel to their local adb server (`ssh -N -R 5038:localhost:5037 grg@<vps>` on their computer, then `adb -P 5038 …` here).
+17. Phone over the tunnel works (both adb builds speak protocol 41: VPS 37.0.1, user's Debian 34.0.4). Restored `DeviceScanTest` (androidTest; both engines on the 8 fixture photos through the app's own code) and added `android/tools/device-test.sh`. First on-device run found: (a) `DebugReport` used `"%.2f".format(x).toDouble()` → `NumberFormatException: "0,58"` in the ru locale — fixed with locale-free rounding; (b) PP-OCR process **killed by the low-memory killer** on the 5th photo. Measured memory, tried ONNX Runtime options (`PpOcrEngine.Config.lowMemory`: no arena, no memory pattern — small gain), detector input caps and tiled detection (see [Memory on the phone](#memory-on-the-phone)). ML Kit on the phone: 22/37 fields, 39/59 text, 412 MB peak.
 
 ---
 
@@ -165,10 +168,37 @@ Remaining misses are OCR-limited: script fonts (Château Poujeaux), text cut off
 
 APK (debug): 74 MB = models 32 MB (det 9.9, rec 21.2, cls 0.6) + ONNX Runtime 18 MB + ML Kit ~12 MB + unminified dex ~10 MB.
 
+### Memory on the phone
+
+User's phone: 2.7 GB RAM, ~760 MB available with the usual apps open; the low-memory killer
+SIGKILLs the scan process (no Java or native crash log — look for `Process … exited due to signal 9`
+and falling `am_low_memory` counts in `adb logcat -b main,system`).
+
+| Engine / input | Peak RSS (VmHWM) | Notes |
+|---|---|---|
+| PP-OCR, filhot (370×640 → det 736×1280) | 480 MB → **355 MB** with `lowMemory` | |
+| PP-OCR, schramsberg (det 1344×2016, 2.7 MP) | 746 MB → **699 MB** with `lowMemory` | native heap 439 MB, Java heap 202 MB |
+| PP-OCR, poujeaux (det 1504×2016, 3.0 MP) | killed | a 13 MP camera photo gives the same det size |
+| ML Kit, all 8 photos | 412 MB | 22/37 fields, 39/59 text, 15 s total |
+
+The detector needs ~150 B per input pixel of native working memory (desktop ORT 1.31,
+1504×2016: +450–530 MB whatever the arena / memory-pattern / optimization-level / thread settings).
+
+Tried and rejected (Python, `--no-enhance`, full-res baseline 32/37 fields, 38/59 text):
+- **Cap the detector input's long side** (crops for recognition stay full-res): 1536 → 26/37, 1280 → 25/37, 1024 → 27/37, 960 → 27/37. Losses: schramsberg producer "Sthransbeng", ABV, volume, appellation; sainte_magdeleine appellation, country.
+- **Tiled detection** (overlapping tiles of the det tensor, stitched probability map): 1024/64 → 31/37 but only 1/8 identical raw text; 768/96 → 21/37. The model uses global context, so tiles don't reproduce the full-image output.
+
+Options still open: (1) cap the detector anyway, maybe only when available memory is low,
+and rely on the label filling the frame in real photos; (2) cut ~100 MB of Java-side copies
+(float planes, tensor copies) — no accuracy change, probably not enough alone for 3 MP;
+(3) ML Kit on low-RAM phones; (4) crop to the label before OCR (capture guidance).
+
 ## Gotchas found the hard way
 
 - **ONNX Runtime Java API mangles UTF-8 model metadata** (bytes decoded one by one and truncated: 18,166 entries instead of 18,708; spaces were lost because the space class index shifted). Fix: `ppocrv6_keys.txt`.
 - **Android regex is ICU**: `(?U)` / `(?iu)` compile on the JVM but throw `PatternSyntaxException` on Android, inside `LabelParser.<clinit>` → `NoClassDefFoundError` for every scan.
+- **Locale-dependent formatting**: `"%.2f".format(x)` gives `"0,58"` in ru/de/fr; `.toDouble()` on it throws. Round numerically (`DebugReport.round`). Only the on-screen percentage uses the locale on purpose.
+- **Low-memory kills leave no crash log** — see [Memory on the phone](#memory-on-the-phone).
 - **Caught exceptions are invisible** in `adb logcat AndroidRuntime:E` — that tag only logs crashes.
 - **Kotlin nests block comments**: `fixtures/text/*.json` inside KDoc broke compilation.
 - **rapidocr 3.x** requires enum values (`OCRVersion.PPOCRV6`, `ModelType`) for model params, not strings. Its default PP-OCRv6 model is multilingual; `lang_type="latin"` is rejected for v6.
@@ -178,6 +208,36 @@ APK (debug): 74 MB = models 32 MB (det 9.9, rec 21.2, cls 0.6) + ONNX Runtime 18
 - `gradle-wrapper.jar` is committed; `local.properties` is not (set `ANDROID_HOME` in fresh clones).
 
 ---
+
+## Testing on the user's phone
+
+The user's computer has the phone on USB and forwards its adb server to the VPS:
+
+```bash
+# user's computer (keep open; Ctrl+C closes it)
+ssh -N -R 5038:localhost:5037 grg@<vps>
+# VPS
+~/Android/Sdk/platform-tools/adb -P 5038 devices      # HRY-LX1 ... device
+```
+
+Port 5038 so it never clashes with a local adb server on 5037. adb client and server must
+speak the same protocol (the `1.0.41` in `adb version`). While the tunnel is open, anyone
+logged in to the VPS controls the phone.
+
+```bash
+cd android && export JAVA_HOME=~/opt/jdk-17
+./gradlew :app:assembleDebug :app:assembleDebugAndroidTest
+A="$HOME/Android/Sdk/platform-tools/adb -P 5038"
+$A install -r -t app/build/outputs/apk/debug/app-debug.apk                      # ~1 min over the tunnel
+$A install -r -t app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
+tools/device-test.sh ONNX                       # or MLKIT; optional 2nd arg: a.jpg,b.jpg
+$A pull /sdcard/Android/data/winelabel.app/files/device-test   # per-photo debug reports + summary.txt
+```
+
+`device-test.sh` prints the instrumentation result, the peak RSS (VmHWM polled every second),
+the `WineLabelTest` summary and any low-memory kill. The `signal 9` line at the very end of
+a passing run is the normal teardown. The camera can be triggered, but it photographs
+whatever the phone is pointing at.
 
 ## Adding a test case
 

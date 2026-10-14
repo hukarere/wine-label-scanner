@@ -12,7 +12,7 @@ object DebugReport {
         for ((name, f) in result.label.fields()) {
             fields.put(name, if (f == null) JSONObject.NULL else JSONObject().apply {
                 put("value", (f.value as? List<*>)?.let { JSONArray(it) } ?: f.value)
-                put("confidence", "%.2f".format(f.confidence).toDouble())
+                put("confidence", round(f.confidence, 2))
                 put("source", f.source)
             })
         }
@@ -20,8 +20,8 @@ object DebugReport {
         for (l in result.lines) {
             lines.put(JSONObject().apply {
                 put("text", l.text)
-                put("confidence", "%.3f".format(l.confidence).toDouble())
-                put("height", "%.1f".format(l.height).toDouble())
+                put("confidence", round(l.confidence, 3))
+                put("height", round(l.height, 1))
                 put("box", JSONArray(l.box.map { JSONArray(listOf(it.x.toInt(), it.y.toInt())) }))
             })
         }
@@ -36,5 +36,11 @@ object DebugReport {
             put("fields", fields)
             put("lines", lines)
         }.toString(2)
+    }
+
+    /** Not via "%.2f".format(): that uses the device locale ("0,58" in ru/de/fr) and toDouble() then throws. */
+    private fun round(x: Double, decimals: Int): Double {
+        val f = Math.pow(10.0, decimals.toDouble())
+        return Math.rint(x * f) / f
     }
 }

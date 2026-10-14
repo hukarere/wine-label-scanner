@@ -29,6 +29,7 @@ class Engines(private val context: Context) {
                     clsModel = asset("ch_ppocr_mobile_v2.0_cls_mobile.onnx"),
                     recModel = asset("PP-OCRv6_rec_small.onnx"),
                     keys = asset("ppocrv6_keys.txt").toString(Charsets.UTF_8),
+                    config = PpOcrEngine.Config(lowMemory = true),
                 )
             }
             EngineKind.MLKIT -> MlKitEngine()
