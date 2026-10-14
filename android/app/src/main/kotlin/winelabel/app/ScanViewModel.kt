@@ -13,14 +13,12 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import winelabel.ScanResult
-import winelabel.Scanner
 import winelabel.model.RgbImage
-import winelabel.ocr.PpOcrEngine
 
 sealed interface UiState {
     data object Idle : UiState
     data class Working(val message: String) : UiState
-    data class Done(val result: ScanResult, val timings: Map<String, Long>) : UiState
+    data class Done(val result: ScanResult, val info: ScanInfo) : UiState
     /** [details] is the full stack trace, for "Copy error details". */
     data class Error(val message: String, val details: String) : UiState
 }
@@ -67,12 +65,10 @@ class ScanViewModel(app: Application) : AndroidViewModel(app) {
         val kind = _engine.value
         try {
             _state.value = UiState.Working("Reading label with ${kind.label}…")
-            val (result, timings) = withContext(Dispatchers.Default) {
-                val engine = engines.get(kind)
-                val r = Scanner.scan(img, engine)
-                r to ((engine as? PpOcrEngine)?.lastTimings ?: emptyMap())
+            val (result, info) = withContext(Dispatchers.Default) {
+                AppScan.scan(getApplication(), img, engines.get(kind))
             }
-            _state.value = UiState.Done(result, timings)
+            _state.value = UiState.Done(result, info)
         } catch (e: Throwable) {
             fail("${kind.label} failed", e)
         }

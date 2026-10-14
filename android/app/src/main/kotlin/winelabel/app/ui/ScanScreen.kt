@@ -64,6 +64,7 @@ import winelabel.app.DebugReport
 import winelabel.app.EngineKind
 import winelabel.app.ScanViewModel
 import winelabel.app.UiState
+import winelabel.app.ScanInfo
 import winelabel.app.toBitmap
 import java.io.File
 
@@ -146,7 +147,7 @@ fun ScanScreen(vm: ScanViewModel) {
                         }
                     }
                 }
-                is UiState.Done -> Results(s.result, s.timings, engine, onCompare = { vm.setEngine(it); vm.rescan() })
+                is UiState.Done -> Results(s.result, s.info, engine, onCompare = { vm.setEngine(it); vm.rescan() })
             }
         }
     }
@@ -168,14 +169,15 @@ private fun Tips() {
 
 @OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
-private fun Results(result: ScanResult, timings: Map<String, Long>, current: EngineKind, onCompare: (EngineKind) -> Unit) {
+private fun Results(result: ScanResult, info: ScanInfo, current: EngineKind, onCompare: (EngineKind) -> Unit) {
     val context = LocalContext.current
     val other = EngineKind.entries.first { it != current }
 
     PhotoWithBoxes(result)
     Text(
         "${result.engine} · ${result.lines.size} lines · ${result.millis} ms" +
-            if (timings.isNotEmpty()) " (${timings.entries.joinToString { "${it.key} ${it.value}" }})" else "",
+            (if (info.timings.isNotEmpty()) " (${info.timings.entries.joinToString { "${it.key} ${it.value}" }})" else "") +
+            (if (info.detInput?.capped == true) " · reduced detail: low memory" else ""),
         style = MaterialTheme.typography.bodySmall,
     )
 
@@ -219,7 +221,7 @@ private fun Results(result: ScanResult, timings: Map<String, Long>, current: Eng
         OutlinedButton(onClick = { share(context, result.rawText) }) { Text("Share") }
         OutlinedButton(onClick = {
             val version = context.packageManager.getPackageInfo(context.packageName, 0).versionName ?: "?"
-            copy(context, "Debug report", DebugReport.build(result, timings, version))
+            copy(context, "Debug report", DebugReport.build(result, info, version))
         }) { Text("Copy debug report") }
         OutlinedButton(onClick = { onCompare(other) }) { Text("Re-scan with ${other.label}") }
     }

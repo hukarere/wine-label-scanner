@@ -25,5 +25,6 @@ tasks.test {
     systemProperty("winelabel.models", rootProject.file("app/src/main/assets/models").absolutePath)
     // Photo folder under fixtures/ for PpOcrParityTest, e.g. -Pphotos=vinmonopolet (local-only set).
     systemProperty("winelabel.photos", (findProperty("photos") as String?) ?: "images")
+    systemProperty("winelabel.dump", (findProperty("dump") as String?) ?: "")
     testLogging { events("failed"); showStandardStreams = true; exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL }
 }

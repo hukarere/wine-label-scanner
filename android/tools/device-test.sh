@@ -2,12 +2,14 @@
 # Run DeviceScanTest on a phone and record the app's peak memory (VmHWM) per run.
 # Usage: tools/device-test.sh [ONNX|MLKIT] [img1.jpg,img2.jpg]   (default: ONNX, all fixtures)
 # ADB defaults to the user's adb server tunnelled to port 5038 (see docs/PROJECT_NOTES.md).
+# DET_MAX_PIXELS=N forces the PP-OCR detector pixel cap (default: the app's free-memory budget).
 set -u
 ADB=${ADB:-"$HOME/Android/Sdk/platform-tools/adb -P 5038"}
 ENGINE=${1:-ONNX}
 IMAGES=${2:-}
 method=$(echo "$ENGINE" | tr 'A-Z' 'a-z')
 extra=(); [ -n "$IMAGES" ] && extra=(-e images "$IMAGES")
+[ -n "${DET_MAX_PIXELS:-}" ] && extra+=(-e detMaxPixels "$DET_MAX_PIXELS")
 $ADB logcat -c
 $ADB shell am instrument -w -e engines "$ENGINE" "${extra[@]}" \
     -e class "winelabel.app.DeviceScanTest#$method" \

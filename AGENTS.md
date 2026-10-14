@@ -77,8 +77,10 @@ copy a stale APK.
    via `UiState.Error(message, details)` — logcat's `AndroidRuntime` tag only shows crashes.
 7. KDoc/comments: don't write `/*` inside `/** */` (Kotlin nests comments → "Unclosed comment").
 8. No locale-dependent number formatting in data (`"%.2f".format(x).toDouble()` breaks in ru/de/fr).
-9. Memory: the user's phone has 2.7 GB RAM; the app's ONNX engine uses `Config(lowMemory = true)`.
-   Check peak memory with `tools/device-test.sh` after pipeline changes.
+9. Memory: the user's phone has 2.7 GB RAM. The app's ONNX engine uses `Config(lowMemory = true)`
+   and `AppScan` sets `detMaxPixels` from free memory before each scan (PROJECT_NOTES "Memory on
+   the phone"). Pipeline changes must keep OCR output identical unless intended: diff
+   `-Pdump=<dir>` output before/after; check peak memory with `tools/device-test.sh`.
 10. Never commit `python/fixtures/vinmonopolet/` (copyrighted retailer photos). Evaluate on it with
    `winelabel eval fixtures/vinmonopolet` / `-Pphotos=vinmonopolet` (PROJECT_NOTES "Vinmonopolet test set").
 

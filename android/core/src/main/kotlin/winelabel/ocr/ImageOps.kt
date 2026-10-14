@@ -63,19 +63,25 @@ object ImageOps {
     /** cv2.resize(..., INTER_AREA) for downscaling: average of covered source pixels. */
     fun resizeArea(src: Planes, w: Int, h: Int): Planes {
         if (w >= src.width || h >= src.height) return resizeBilinear(src, w, h)
-        val dst = Planes(w, h)
-        val sx = src.width.toDouble() / w
-        val sy = src.height.toDouble() / h
-        val tmp = Array(3) { FloatArray(w * src.height) }
+        return Planes(w, h, Array(3) { c -> resizeAreaChannel(src.data[c], src.width, src.height, w, h) })
+    }
+
+    /**
+     * [resizeArea] on one channel (sw×sh → w×h, downscaling only). Channels are independent,
+     * so resizing them one at a time gives identical values with a third of the memory.
+     */
+    fun resizeAreaChannel(src: FloatArray, sw: Int, sh: Int, w: Int, h: Int): FloatArray {
+        val dst = FloatArray(w * h)
+        val sx = sw.toDouble() / w
+        val sy = sh.toDouble() / h
+        val tmp = FloatArray(w * sh)
         // Horizontal pass
         for (x in 0 until w) {
             val a = x * sx; val b = a + sx
             var i = floor(a).toInt()
-            while (i < ceil(b).toInt() && i < src.width) {
+            while (i < ceil(b).toInt() && i < sw) {
                 val wgt = (min(b, i + 1.0) - max(a, i.toDouble())).toFloat() / sx.toFloat()
-                for (c in 0 until 3) for (y in 0 until src.height) {
-                    tmp[c][y * w + x] += src.data[c][y * src.width + i] * wgt
-                }
+                for (y in 0 until sh) tmp[y * w + x] += src[y * sw + i] * wgt
                 i++
             }
         }
@@ -83,15 +89,44 @@ object ImageOps {
         for (y in 0 until h) {
             val a = y * sy; val b = a + sy
             var j = floor(a).toInt()
-            while (j < ceil(b).toInt() && j < src.height) {
+            while (j < ceil(b).toInt() && j < sh) {
                 val wgt = (min(b, j + 1.0) - max(a, j.toDouble())).toFloat() / sy.toFloat()
-                for (c in 0 until 3) for (x in 0 until w) {
-                    dst.data[c][y * w + x] += tmp[c][j * w + x] * wgt
-                }
+                for (x in 0 until w) dst[y * w + x] += tmp[j * w + x] * wgt
                 j++
             }
         }
         return dst
+    }
+
+    /**
+     * [resizeBilinear] followed by PP-OCR normalization ((v/255 - 0.5)/0.5 = v/127.5 - 1), written
+     * straight into [out] as a CHW tensor. Same values as resize + fill, without the resized copy.
+     */
+    fun resizeBilinearNormalized(src: Planes, w: Int, h: Int, out: java.nio.FloatBuffer) {
+        val sx = src.width.toDouble() / w
+        val sy = src.height.toDouble() / h
+        val plane = w * h
+        val x0 = IntArray(w); val x1 = IntArray(w); val fx = FloatArray(w)
+        for (x in 0 until w) {
+            val fxs = ((x + 0.5) * sx - 0.5).coerceAtLeast(0.0)
+            val xi = floor(fxs).toInt().coerceAtMost(src.width - 1)
+            x0[x] = xi; x1[x] = min(xi + 1, src.width - 1); fx[x] = (fxs - xi).toFloat()
+        }
+        for (y in 0 until h) {
+            val fys = ((y + 0.5) * sy - 0.5).coerceAtLeast(0.0)
+            val y0 = floor(fys).toInt().coerceAtMost(src.height - 1)
+            val y1 = min(y0 + 1, src.height - 1)
+            val fy = (fys - y0).toFloat()
+            for (c in 0 until 3) {
+                val s = src.data[c]
+                val r0 = y0 * src.width; val r1 = y1 * src.width
+                for (x in 0 until w) {
+                    val top = s[r0 + x0[x]] * (1 - fx[x]) + s[r0 + x1[x]] * fx[x]
+                    val bot = s[r1 + x0[x]] * (1 - fx[x]) + s[r1 + x1[x]] * fx[x]
+                    out.put(c * plane + y * w + x, (top * (1 - fy) + bot * fy) / 127.5f - 1f)
+                }
+            }
+        }
     }
 
     /** Constant (black) padding top and bottom — rapidocr's add_round_letterbox. */

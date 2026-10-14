@@ -23,7 +23,7 @@ Detailed record for resuming work. The short operational brief is [`AGENTS.md`](
 | Python prototype | Done. 57 tests pass. |
 | Kotlin `core` | Done. 55 JVM tests pass, including OCR on the 8 real photos (parity with Python). |
 | Android app | Builds (debug, arm64-v8a, 74 MB), lint clean. Installed on the user's phone (Honor 10 Lite HRY-LX1, Android 10, **2.7 GB RAM**, ru locale). |
-| On-device | Tested directly from the VPS over an adb tunnel ([Testing on the user's phone](#testing-on-the-users-phone)). `DeviceScanTest` runs both engines on the 8 photos. Fixed: ICU regex crash, locale crash in the debug report. **Open: PP-OCR runs out of memory on camera-sized photos** (see [Memory on the phone](#memory-on-the-phone)); decision pending with the user. |
+| On-device | Tested directly from the VPS over an adb tunnel ([Testing on the user's phone](#testing-on-the-users-phone)). `DeviceScanTest` runs both engines on the 8 photos. Fixed: ICU regex crash, locale crash in the debug report. PP-OCR memory: fixed by cutting image copies (bit-identical output) and a **free-memory budget that caps the detector input only when needed** — all 8 Commons photos now run in one process (31/37, was killed on the 5th). |
 | Repo | github.com/hukarere/wine-label-scanner (public). No LICENSE yet. APK not published as a Release. |
 
 **Not yet verified anywhere:** the camera → TakePicture flow end to end, the
@@ -31,14 +31,14 @@ share-into-app intent, dark theme look, the UI flow driven by taps.
 
 **Test sets:** 8 committed Commons photos + 26 local-only Vinmonopolet packshots (PP-OCR 77/108 vs ML Kit 69/108 on those).
 
-**Next:** decide how to fit PP-OCR into the phone's memory (options in
-[Memory on the phone](#memory-on-the-phone)), then real-bottle scans → fixtures → choose the engine.
+**Next:** producer extraction in the parser (PP-OCR reads most producers but the parser picks or
+splits the wrong line), missing regions/grapes, then real-bottle scans → fixtures → choose the engine.
 
 ## Roadmap
 
 Prioritized; none started unless noted.
 
-0. **PP-OCR memory on 2–3 GB phones** — decide between the options in [Memory on the phone](#memory-on-the-phone) (blocks real use of the ONNX engine on the user's phone).
+0. ~~PP-OCR memory on 2–3 GB phones~~ — done (budgeted detector cap); watch `det_capped` in debug reports from real use.
 1. **Collect real-scan debug reports** → add as fixtures (see [Adding a test case](#adding-a-test-case)) → parser fixes in both languages.
 2. **Choose an engine** (PP-OCR ONNX vs ML Kit) from on-device results; drop the other to cut 12–18 MB.
 3. **Release build**: enable R8 (`isMinifyEnabled`, check ONNX Runtime keep rules), release signing key, smaller APK (~10 MB of debug dex goes away).
@@ -75,6 +75,7 @@ Prioritized; none started unless noted.
 16. Tried a headless **ARM64 emulator under software emulation** (no KVM) to test without the user. Emulator ≥ 31 refuses arm64 images on an x86_64 host; 30.4.5 boots the Android 10 (API 29) `google_apis` image, but `system_server` crash-loops (SIGABRT) because the guest kernel binds no input device (virtio-input over MMIO needs a modern virtio transport this qemu lacks; `goldfish-events` has no driver). **Abandoned and deleted** (emulator, system images, AVDs). Next approach: drive the user's real phone (Android 10) from the VPS through an SSH reverse tunnel to their local adb server (`ssh -N -R 5038:localhost:5037 grg@<vps>` on their computer, then `adb -P 5038 …` here).
 17. Phone over the tunnel works (both adb builds speak protocol 41: VPS 37.0.1, user's Debian 34.0.4). Restored `DeviceScanTest` (androidTest; both engines on the 8 fixture photos through the app's own code) and added `android/tools/device-test.sh`. First on-device run found: (a) `DebugReport` used `"%.2f".format(x).toDouble()` → `NumberFormatException: "0,58"` in the ru locale — fixed with locale-free rounding; (b) PP-OCR process **killed by the low-memory killer** on the 5th photo. Measured memory, tried ONNX Runtime options (`PpOcrEngine.Config.lowMemory`: no arena, no memory pattern — small gain), detector input caps and tiled detection (see [Memory on the phone](#memory-on-the-phone)). ML Kit on the phone: 22/37 fields, 39/59 text, 412 MB peak.
 18. The 8 Commons photos aren't representative. Built a second, **local-only** set of 26 Vinmonopolet packshots (`python/tools/fetch_vinmonopolet.py`, gitignored output) with hand-checked ground truth (committed as `python/fixtures/vinmonopolet.expected.json`): 8 of the shop's vintages didn't match the label, producers are often company names, ABV/volume usually sit on the back label. PP-OCR (JVM and phone, identical) 77/108 fields, ML Kit 69/108; they differ mainly on producer (10 vs 4 of 24). `PpOcrParityTest` and the androidTest APK take `-Pphotos=<folder>`.
+19. PP-OCR memory work. Lighter detectors (v6 tiny, v5/v4 mobile) tie on Vinmonopolet but lose 7–9 fields on Commons and save at most ~150 MB → rejected. Cut Java copies: `Scanner.prepare` resizes one channel at a time from the packed pixels; the detector tensor is resized+normalized straight into a direct buffer that ORT uses without copying — **bit-identical OCR output on all 34 photos** (`-Pdump` diff), peaks −40…80 MB. Added `PpOcrEngine.detMaxPixels` (default 0 = off, so JVM/Python parity is unchanged) and `AppScan`/`DeviceMemory`: before each ONNX scan the app caps the detector input to (availMem − threshold − 64 MB) / 170 B, min 1 MP. Debug report gains `det_input`, `det_capped`, `det_max_pixels`, `avail_mem_mb`; the UI says "reduced detail: low memory".
 
 ---
 
@@ -208,10 +209,30 @@ Tried and rejected (Python, `--no-enhance`, full-res baseline 32/37 fields, 38/5
 - **Cap the detector input's long side** (crops for recognition stay full-res): 1536 → 26/37, 1280 → 25/37, 1024 → 27/37, 960 → 27/37. Losses: schramsberg producer "Sthransbeng", ABV, volume, appellation; sainte_magdeleine appellation, country.
 - **Tiled detection** (overlapping tiles of the det tensor, stitched probability map): 1024/64 → 31/37 but only 1/8 identical raw text; 768/96 → 21/37. The model uses global context, so tiles don't reproduce the full-image output.
 
-Options still open: (1) cap the detector anyway, maybe only when available memory is low,
-and rely on the label filling the frame in real photos; (2) cut ~100 MB of Java-side copies
-(float planes, tensor copies) — no accuracy change, probably not enough alone for 3 MP;
-(3) ML Kit on low-RAM phones; (4) crop to the label before OCR (capture guidance).
+Also rejected: **lighter detector models** (rapidocr `Det.model_type`/`Det.ocr_version`, rec unchanged):
+
+| Detector | Commons fields | Vinmonopolet fields | Det. memory at 1504×2016 (desktop ORT) |
+|---|---|---|---|
+| PP-OCRv6 small (current) | 32/37 | 74/108 | +518 MB |
+| PP-OCRv6 tiny | 23/37 | 74/108 | +365 MB |
+| PP-OCRv5 mobile | 24/37 | 75/108 | +466 MB |
+| PP-OCRv4 mobile | 25/37 | 72/108 | +507 MB |
+
+Cap cost when it does engage (Python, long side ≤ 1600): Commons 32→30, Vinmonopolet 74→70
+(small print: ABV, a producer, an appellation); 1024–1536 cost the same on Vinmonopolet.
+
+**What's in place** (timeline 19): fewer Java copies (bit-identical) + a free-memory budget.
+On the phone after the change:
+
+| Run | Peak RSS | Result |
+|---|---|---|
+| casillero (det 1568×2016), budget, 809 MB free | 718 MB | full size, same fields |
+| casillero, forced `DET_MAX_PIXELS=1500000` | **462 MB** | det 1088×1376, same fields, 8.6 s vs 12.6 s |
+| all 26 Vinmonopolet in one process | 716 MB | 77/108, 123/140 — no kill, no cap |
+| all 8 Commons in one process (killed on the 5th before) | 764 MB | 31/37, 38/59; schramsberg slightly capped at 713 MB free |
+
+`BYTES_PER_DET_PIXEL = 170` comes from peak-vs-detector-pixels on the phone (0.94 MP → 355 MB,
+1.88 → 486, 3.16 → 703). If real-use reports show kills or frequent caps, revisit it.
 
 ## Gotchas found the hard way
 

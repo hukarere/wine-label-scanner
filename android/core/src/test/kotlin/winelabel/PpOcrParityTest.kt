@@ -42,6 +42,18 @@ class PpOcrParityTest {
         val dir = Fixtures.root.resolve(photos)
         val expected = Fixtures.readJson(dir.resolve("expected.json")).jsonObject
         expected.keys.associateWith { name -> Scanner.scan(load(dir.resolve(name)), engine) }
+            .also { dump(it) }
+    }
+
+    /** -Pdump=<dir>: write every OCR line (text, confidence, box) per photo, to diff pipeline changes. */
+    private fun dump(results: Map<String, ScanResult>) {
+        val out = System.getProperty("winelabel.dump")?.takeIf { it.isNotEmpty() }?.let(::File) ?: return
+        out.mkdirs()
+        for ((name, r) in results) {
+            out.resolve("$name.txt").writeText(r.lines.joinToString("\n") { l ->
+                "${l.text}\t${l.confidence}\t" + l.box.joinToString(" ") { "${it.x},${it.y}" }
+            } + "\n" + r.label.values() + "\n")
+        }
     }
 
     private fun load(f: File): RgbImage {

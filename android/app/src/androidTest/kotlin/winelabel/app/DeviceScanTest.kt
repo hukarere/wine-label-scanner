@@ -9,7 +9,6 @@ import org.json.JSONObject
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
-import winelabel.Scanner
 import winelabel.parse.Text
 import java.io.File
 
@@ -22,6 +21,7 @@ import java.io.File
  * Each photo's debug report is written to the app's external files dir:
  *   adb pull /sdcard/Android/data/winelabel.app/files/device-test
  * Optional instrumentation args: -e images a.jpg,b.jpg  -e engines ONNX,MLKIT
+ *   -e detMaxPixels N   (force the PP-OCR detector pixel cap instead of the memory budget)
  */
 @RunWith(AndroidJUnit4::class)
 class DeviceScanTest {
@@ -34,6 +34,11 @@ class DeviceScanTest {
     private val expected = JSONObject(testAssets.open("expected.json").use { it.readBytes().toString(Charsets.UTF_8) })
     private val images = args.getString("images")?.split(",")?.map { it.trim() }
         ?: expected.keys().asSequence().toList()
+
+    private val forceDetMaxPixels = args.getString("detMaxPixels")?.toInt()
+
+    /** Which fixture folder the APK was built with (-Pphotos); floors are calibrated for "images". */
+    private val photoSet = testAssets.open("photoset.txt").use { it.readBytes().toString(Charsets.UTF_8).trim() }
 
     private fun wanted(kind: EngineKind) =
         args.getString("engines")?.split(",")?.map { it.trim().uppercase() }?.contains(kind.name) ?: true
@@ -58,14 +63,14 @@ class DeviceScanTest {
                 // Through a file Uri, like a picked photo goes through a content Uri.
                 val file = File(app.cacheDir, name)
                 testAssets.open(name).use { input -> file.outputStream().use { input.copyTo(it) } }
-                val result = Scanner.scan(AndroidImages.load(app, Uri.fromFile(file)), engine)
+                val (result, info) = AppScan.scan(app, AndroidImages.load(app, Uri.fromFile(file)), engine, forceDetMaxPixels)
                 millis += result.millis
-                val timings = (engine as? winelabel.ocr.PpOcrEngine)?.lastTimings ?: emptyMap()
                 File(dir, name.substringBeforeLast('.') + ".json")
-                    .writeText(DebugReport.build(result, timings, "device-test"))
+                    .writeText(DebugReport.build(result, info, "device-test"))
 
                 val actual = result.label.values()
-                summary.append("## $name (${result.millis} ms, ${result.lines.size} lines)\n")
+                val det = info.detInput?.let { " det ${it.width}x${it.height}${if (it.capped) " CAPPED" else ""}, free ${info.availMemMb} MB" } ?: ""
+                summary.append("## $name (${result.millis} ms, ${result.lines.size} lines$det)\n")
                 for (field in exp.keys()) {
                     if (field.startsWith("_")) continue
                     val e = toKotlin(exp.get(field))
@@ -90,6 +95,7 @@ class DeviceScanTest {
         summary.append("${kind.name} FIELDS $fieldsOk/$fieldsN  TEXT $textOk/$textN  TIME $millis ms\n")
         File(dir, "summary.txt").writeText(summary.toString())
         summary.lines().forEach { Log.i(TAG, it) }
+        if (photoSet != "images") return
         assertTrue("${kind.label} field accuracy $fieldsOk/$fieldsN", fieldsOk >= fieldFloor * fieldsN)
         assertTrue("${kind.label} text recall $textOk/$textN", textOk >= textFloor * textN)
     }

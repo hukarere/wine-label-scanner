@@ -6,6 +6,8 @@ import ai.onnxruntime.OrtSession
 import winelabel.model.OcrLine
 import winelabel.model.Point
 import winelabel.model.RgbImage
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
 import java.nio.FloatBuffer
 import kotlin.math.abs
 import kotlin.math.ceil
@@ -13,6 +15,7 @@ import kotlin.math.hypot
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
+import kotlin.math.sqrt
 
 /**
  * PP-OCRv6 (det + rec) and the PP-OCR text-orientation classifier on ONNX Runtime.
@@ -53,7 +56,15 @@ class PpOcrEngine(
          * Same results, a little slower; see PROJECT_NOTES "Memory on the phone".
          */
         val lowMemory: Boolean = false,
+        /**
+         * Upper bound on the detector input's pixel count (0 = none, as in rapidocr). The detector's
+         * working memory grows with it (~170 B/pixel on a phone); see PROJECT_NOTES "Memory on the phone".
+         */
+        val detMaxPixels: Int = 0,
     )
+
+    /** Detector input size of the last call, and whether [detMaxPixels] made it smaller. */
+    data class DetInput(val width: Int, val height: Int, val capped: Boolean)
 
     override val name = "PP-OCRv6 (ONNX)"
 
@@ -78,6 +89,12 @@ class PpOcrEngine(
             "keys file has ${characters.size - 2} entries but the rec model outputs $classes classes"
         }
     }
+
+    /** Pixel cap for the next calls; the app sets it before each scan from the free memory. */
+    @Volatile var detMaxPixels: Int = config.detMaxPixels
+
+    @Volatile var lastDetInput: DetInput? = null
+        private set
 
     /** Last call's stage timings in ms, for the debug report. */
     @Volatile var lastTimings: Map<String, Long> = emptyMap()
@@ -168,16 +185,21 @@ class PpOcrEngine(
     private fun detect(img: Planes): List<List<DoubleArray>> {
         // DetPreProcess.resize, limit_type "min".
         val shortSide = min(img.width, img.height)
-        val ratio = if (shortSide < config.detLimitSideLen) config.detLimitSideLen.toDouble() / shortSide else 1.0
+        var ratio = if (shortSide < config.detLimitSideLen) config.detLimitSideLen.toDouble() / shortSide else 1.0
+        val cap = detMaxPixels
+        val capped = cap > 0 && img.width * ratio * img.height * ratio > cap
+        if (capped) ratio = sqrt(cap.toDouble() / (img.width.toDouble() * img.height))
         val rw = round32((img.width * ratio).toInt())
         val rh = round32((img.height * ratio).toInt())
+        lastDetInput = DetInput(rw, rh, capped)
         if (rw <= 0 || rh <= 0) return emptyList()
-        val resized = ImageOps.resizeBilinear(img, rw, rh)
-        val input = FloatArray(3 * rw * rh)
-        fillTensor(input, 0, resized, rw)
+        // Resize + normalize straight into a direct buffer: ONNX Runtime uses it without copying,
+        // and no resized float copy of the image is kept (each would be 12 bytes per pixel).
+        val input = ByteBuffer.allocateDirect(4 * 3 * rw * rh).order(ByteOrder.nativeOrder()).asFloatBuffer()
+        ImageOps.resizeBilinearNormalized(img, rw, rh, input)
 
         val prob: FloatArray
-        val (pw, ph) = OnnxTensor.createTensor(env, FloatBuffer.wrap(input), longArrayOf(1, 3, rh.toLong(), rw.toLong())).use { t ->
+        val (pw, ph) = OnnxTensor.createTensor(env, input, longArrayOf(1, 3, rh.toLong(), rw.toLong())).use { t ->
             det.run(mapOf(det.inputNames.first() to t)).use { res ->
                 val out = res[0] as OnnxTensor
                 val shape = out.info.shape // [1, 1, H, W]
