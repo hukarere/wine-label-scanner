@@ -23,5 +23,7 @@ tasks.test {
     // Shared with the Python prototype: same fixtures, same model files.
     systemProperty("winelabel.fixtures", pyProject.resolve("fixtures").absolutePath)
     systemProperty("winelabel.models", rootProject.file("app/src/main/assets/models").absolutePath)
+    // Photo folder under fixtures/ for PpOcrParityTest, e.g. -Pphotos=vinmonopolet (local-only set).
+    systemProperty("winelabel.photos", (findProperty("photos") as String?) ?: "images")
     testLogging { events("failed"); showStandardStreams = true; exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL }
 }

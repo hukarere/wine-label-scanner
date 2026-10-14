@@ -16,6 +16,7 @@ python/               Python prototype (reference implementation, CLI, evaluatio
   winelabel/data/     grapes.txt, regions.txt (name|country), countries.txt (name|aliases)
   fixtures/text/      OCR-line test cases (shared with Kotlin)
   fixtures/images/    8 labelled real photos + expected.json + ATTRIBUTION.md (shared)
+  fixtures/vinmonopolet/  26 retailer packshots, LOCAL ONLY (copyrighted, gitignored) — tools/fetch_vinmonopolet.py
 android/              Android app (Gradle)
   core/               pure Kotlin/JVM: port of parser + layout + the whole OCR pipeline
   app/                Compose UI, ONNX + ML Kit engines, image loading, debug report
@@ -77,6 +78,8 @@ copy a stale APK.
 8. No locale-dependent number formatting in data (`"%.2f".format(x).toDouble()` breaks in ru/de/fr).
 9. Memory: the user's phone has 2.7 GB RAM; the app's ONNX engine uses `Config(lowMemory = true)`.
    Check peak memory with `tools/device-test.sh` after pipeline changes.
+10. Never commit `python/fixtures/vinmonopolet/` (copyrighted retailer photos). Evaluate on it with
+   `winelabel eval fixtures/vinmonopolet` / `-Pphotos=vinmonopolet` (PROJECT_NOTES "Vinmonopolet test set").
 
 ## Feedback loop with the user (no device here)
 

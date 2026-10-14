@@ -5,6 +5,7 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import winelabel.model.RgbImage
@@ -18,6 +19,9 @@ import javax.imageio.ImageIO
  * The Kotlin OCR pipeline on the 8 real photos in python/fixtures/images:
  * same accuracy floors as tests/test_images.py, and OCR text close to the Python
  * pipeline's output (golden JSON from `winelabel scan --json --no-enhance`).
+ *
+ * `-Pphotos=<folder>` runs it on another photo folder under fixtures/ (e.g. the local-only
+ * vinmonopolet set): scores are printed, but floors and golden parity apply only to `images`.
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class PpOcrParityTest {
@@ -31,8 +35,11 @@ class PpOcrParityTest {
         )
     }
 
+    private val photos = System.getProperty("winelabel.photos") ?: "images"
+    private val isDefaultSet = photos == "images"
+
     private val results by lazy {
-        val dir = Fixtures.root.resolve("images")
+        val dir = Fixtures.root.resolve(photos)
         val expected = Fixtures.readJson(dir.resolve("expected.json")).jsonObject
         expected.keys.associateWith { name -> Scanner.scan(load(dir.resolve(name)), engine) }
     }
@@ -47,7 +54,7 @@ class PpOcrParityTest {
 
     @Test
     fun accuracyFloors() {
-        val dir = Fixtures.root.resolve("images")
+        val dir = Fixtures.root.resolve(photos)
         val expected = Fixtures.readJson(dir.resolve("expected.json")).jsonObject
         var fieldsOk = 0; var fieldsN = 0; var textOk = 0; var textN = 0
         for ((name, exp) in expected) {
@@ -69,6 +76,7 @@ class PpOcrParityTest {
             }
         }
         println("FIELDS $fieldsOk/$fieldsN  TEXT $textOk/$textN  TIME ${results.values.sumOf { it.millis }} ms")
+        if (!isDefaultSet) return
         assertTrue(fieldsOk.toDouble() / fieldsN >= 0.78, "field accuracy $fieldsOk/$fieldsN")
         // Python without CLAHE (which the Kotlin pipeline skips) also finds 38/59.
         assertTrue(textOk.toDouble() / textN >= 0.62, "text recall $textOk/$textN")
@@ -76,6 +84,7 @@ class PpOcrParityTest {
 
     @Test
     fun matchesPythonOcr() {
+        assumeTrue(isDefaultSet, "Python goldens exist only for fixtures/images")
         val golden = File(javaClass.getResource("/golden")!!.toURI())
         val sims = mutableListOf<Double>()
         for ((name, r) in results) {
