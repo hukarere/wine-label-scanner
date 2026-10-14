@@ -1,8 +1,9 @@
 # AGENTS.md — working on the Wine Label Scanner
 
 Read this first. Detailed history, measurements, decisions and roadmap are in
-[`docs/PROJECT_NOTES.md`](docs/PROJECT_NOTES.md) — read its **Status** and **Roadmap**
-sections before starting new work.
+[`docs/PROJECT_NOTES.md`](docs/PROJECT_NOTES.md) — in a new session, go through its
+**Status → Resuming work** checklist (state outside git: toolchain, local photos, phone tunnel)
+and **Waiting on the user**, then the **Roadmap**, before starting new work.
 
 ## What this is
 
@@ -25,6 +26,7 @@ fixtures/
   vinmonopolet.expected.json  its hand-checked ground truth (committed; the folder's expected.json links here)
 tools/device-test.sh  run DeviceScanTest on the user's phone, record peak memory
 tools/fetch_vinmonopolet.py   recreate the local-only set (python3, stdlib only)
+tools/compare-eval.sh  before/after scores and per-photo field changes on both photo sets
 docs/PROJECT_NOTES.md history, architecture, decisions, numbers, gotchas, roadmap
 docs/RELEASE_PLAN.md  plan for the release build (R8, signing key) — not started
 ```
@@ -60,9 +62,9 @@ copy a stale APK. Fixtures aren't Gradle task inputs: after editing them use `--
 
 ## Rules / invariants
 
-1. **Measure every recognition change on both photo sets** (`cli eval fixtures/images` and
-   `fixtures/vinmonopolet`) and record the numbers in PROJECT_NOTES. Pipeline changes that
-   shouldn't change results must produce identical `--dump` output before/after.
+1. **Measure every recognition change on both photo sets** with `tools/compare-eval.sh`
+   (`run before` on the committed code, `run after`, then `diff before after`) and record the numbers
+   in PROJECT_NOTES. Changes that shouldn't change results must pass `tools/compare-eval.sh same before after`.
 2. **Android regexes run on ICU, not java.util.regex**: only inline flags `i m s x w` are
    allowed. Use `RegexOption.IGNORE_CASE` instead of `(?iu)`, `\p{L}\p{N}_` instead of `(?U)\w`.
    `AndroidRegexCompatTest` guards this; JVM tests can't otherwise catch it.

@@ -73,7 +73,8 @@ app/    Android (Compose)
   ui/ScanScreen.kt  the single screen
   src/androidTest/  DeviceScanTest: both engines on a photo set, on a real phone
 fixtures/  text/ (OCR-line cases), images/ (8 labelled photos), vinmonopolet.expected.json
-tools/     device-test.sh (on-device test + peak memory), fetch_vinmonopolet.py (local-only photo set)
+tools/     device-test.sh (on-device test + peak memory), compare-eval.sh (before/after scores),
+           fetch_vinmonopolet.py (local-only photo set)
 docs/      PROJECT_NOTES.md (status, roadmap, decisions, measurements), RELEASE_PLAN.md
 ```
 

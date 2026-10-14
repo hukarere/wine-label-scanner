@@ -18,16 +18,45 @@ Detailed record for resuming work. The short operational brief is [`AGENTS.md`](
 
 ## Status (as of 2026-10-14)
 
+### Resuming work (new session)
+
+Read [`AGENTS.md`](../AGENTS.md), then this Status section and the Roadmap. Some state lives
+outside git — check it before starting:
+
+1. Toolchain: `export JAVA_HOME=~/opt/jdk-17`, then `./gradlew :core:test` from the repo root
+   (64 tests, ~1 min) as a smoke test.
+2. Local-only photos: `ls fixtures/vinmonopolet/*.jpg | wc -l` → 26. If missing (fresh clone, other
+   machine): `python3 tools/fetch_vinmonopolet.py` (ground truth is committed; only photos are fetched).
+3. Baseline scores: `tools/compare-eval.sh run base` → expect images 31/37 fields, vinmonopolet 89/108.
+4. Phone: only reachable while the user has the adb tunnel open
+   (`~/Android/Sdk/platform-tools/adb -P 5038 devices`). If it isn't, ask — don't assume.
+5. The phone has the debug build of the last commit that changed the app (installed by the
+   previous session); a copy is at `/home/grg/android/wine-label-scanner-debug.apk` (gitignored).
+
+### Waiting on the user
+
+- **Release build**: the 3 open questions in [`RELEASE_PLAN.md`](RELEASE_PLAN.md#open-questions-for-the-user)
+  (keystore location, one-time uninstall, distribution).
+- **Producer vs brand**: labels often print the brand larger than the producer (Casillero del
+  Diablo / Concha y Toro, Post Scriptum / Prats & Symington, Busy Lissy / Bunn Strebel). Should the
+  app show the brand, the producer, or both? (Ground truth currently expects the producer.)
+- **Real use**: photos of real bottles taken with the phone camera, and the camera / share-into-app
+  flows — the user does them, or explicitly allows driving the app UI on their phone.
+
+### State
+
 | Area | State |
 |---|---|
 | Python prototype | **Retired** (timeline 20) after the Kotlin port matched it; in git history before that commit. |
-| Kotlin `core` | The single implementation. 58 JVM tests pass, including OCR on the 8 real photos; desktop CLI `:core:cli` (`scan`, `eval`). JVM results equal the phone's. |
+| Kotlin `core` | The single implementation. 64 JVM tests pass, including OCR on the 8 real photos; desktop CLI `:core:cli` (`scan`, `eval`); `tools/compare-eval.sh` for before/after. JVM results equal the phone's. Gradle project at the repo root (timeline 24). |
 | Android app | Builds (debug, arm64-v8a, 74 MB), lint clean. Installed on the user's phone (Honor 10 Lite HRY-LX1, Android 10, **2.7 GB RAM**, ru locale). |
 | On-device | Tested directly from the VPS over an adb tunnel ([Testing on the user's phone](#testing-on-the-users-phone)). `DeviceScanTest` runs both engines on the 8 photos. Fixed: ICU regex crash, locale crash in the debug report. PP-OCR memory: fixed by cutting image copies (bit-identical output) and a **free-memory budget that caps the detector input only when needed** — all 8 Commons photos now run in one process (31/37, was killed on the 5th). |
 | Repo | github.com/hukarere/wine-label-scanner (public). No LICENSE yet. APK not published as a Release. |
 
 **Not yet verified anywhere:** the camera → TakePicture flow end to end, the
-share-into-app intent, dark theme look, the UI flow driven by taps.
+share-into-app intent (one attempt over adb didn't complete: the user was using the phone and the
+app went to the background before scanning), dark theme look, the UI flow driven by taps, a release
+(R8-shrunk, release-signed) build.
 
 **Test sets:** 8 committed Commons photos (PP-OCR 31/37) + 26 local-only Vinmonopolet packshots (PP-OCR 89/108; ML Kit 71/108 before the reference-data additions).
 
@@ -314,12 +343,25 @@ tools/device-test.sh ONNX                       # or MLKIT; optional 2nd arg: a.
 $A pull /sdcard/Android/data/winelabel.app/files/device-test   # per-photo debug reports + summary.txt
 ```
 
+- The test APK contains **one** photo set: build it with the set you're about to run
+  (`./gradlew :app:assembleDebugAndroidTest -Pphotos=vinmonopolet`; default `images`), or the test
+  fails with `JSONException: No value for <photo>`.
+- `DET_MAX_PIXELS=1500000 tools/device-test.sh ONNX a.jpg` forces the detector size cap instead of
+  the free-memory budget (to test the low-memory path).
+- It's the user's own phone: run the instrumentation test, but ask before opening the app UI or
+  pushing files, and remove anything you put on it.
+
 `device-test.sh` prints the instrumentation result, the peak RSS (VmHWM polled every second),
 the `WineLabelTest` summary and any low-memory kill. The `signal 9` line at the very end of
 a passing run is the normal teardown. The camera can be triggered, but it photographs
 whatever the phone is pointing at.
 
 ## Adding a test case
+
+Before fixing anything, record a baseline: `tools/compare-eval.sh run before` (on the committed
+code). After the change: `tools/compare-eval.sh run after` and `tools/compare-eval.sh diff before after`
+(per-photo field changes); `same before after` must pass for changes meant to keep results identical.
+Record the new numbers in [Measurements](#measurements).
 
 **From a debug report** (no photo): create `fixtures/text/<name>.json`:
 
