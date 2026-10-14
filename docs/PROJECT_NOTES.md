@@ -74,7 +74,7 @@ Prioritized; none started unless noted.
 15. Renamed the subproject folders for consistency: `wine-label-py/` → `python/`, `WineLabelScanner/` → `android/` (the Gradle project name `WineLabelScanner` and Python package `winelabel` are unchanged).
 16. Tried a headless **ARM64 emulator under software emulation** (no KVM) to test without the user. Emulator ≥ 31 refuses arm64 images on an x86_64 host; 30.4.5 boots the Android 10 (API 29) `google_apis` image, but `system_server` crash-loops (SIGABRT) because the guest kernel binds no input device (virtio-input over MMIO needs a modern virtio transport this qemu lacks; `goldfish-events` has no driver). **Abandoned and deleted** (emulator, system images, AVDs). Next approach: drive the user's real phone (Android 10) from the VPS through an SSH reverse tunnel to their local adb server (`ssh -N -R 5038:localhost:5037 grg@<vps>` on their computer, then `adb -P 5038 …` here).
 17. Phone over the tunnel works (both adb builds speak protocol 41: VPS 37.0.1, user's Debian 34.0.4). Restored `DeviceScanTest` (androidTest; both engines on the 8 fixture photos through the app's own code) and added `android/tools/device-test.sh`. First on-device run found: (a) `DebugReport` used `"%.2f".format(x).toDouble()` → `NumberFormatException: "0,58"` in the ru locale — fixed with locale-free rounding; (b) PP-OCR process **killed by the low-memory killer** on the 5th photo. Measured memory, tried ONNX Runtime options (`PpOcrEngine.Config.lowMemory`: no arena, no memory pattern — small gain), detector input caps and tiled detection (see [Memory on the phone](#memory-on-the-phone)). ML Kit on the phone: 22/37 fields, 39/59 text, 412 MB peak.
-18. The 8 Commons photos aren't representative. Built a second, **local-only** set of 26 Vinmonopolet packshots (`python/tools/fetch_vinmonopolet.py`, gitignored output) with hand-checked ground truth: 8 of the shop's vintages didn't match the label, producers are often company names, ABV/volume usually sit on the back label. PP-OCR (JVM and phone, identical) 77/108 fields, ML Kit 69/108; they differ mainly on producer (10 vs 4 of 24). `PpOcrParityTest` and the androidTest APK take `-Pphotos=<folder>`.
+18. The 8 Commons photos aren't representative. Built a second, **local-only** set of 26 Vinmonopolet packshots (`python/tools/fetch_vinmonopolet.py`, gitignored output) with hand-checked ground truth (committed as `python/fixtures/vinmonopolet.expected.json`): 8 of the shop's vintages didn't match the label, producers are often company names, ABV/volume usually sit on the back label. PP-OCR (JVM and phone, identical) 77/108 fields, ML Kit 69/108; they differ mainly on producer (10 vs 4 of 24). `PpOcrParityTest` and the androidTest APK take `-Pphotos=<folder>`.
 
 ---
 
@@ -225,6 +225,8 @@ and rely on the label filling the frame in real photos; (2) cut ~100 MB of Java-
 - **PP-OCR models expect BGR** channel order (rapidocr feeds OpenCV images).
 - The multilingual model "reads" ornaments as CJK characters → the short-low-confidence noise filter.
 - **Gradle** needs `JAVA_HOME`; a failed `:core:test` skips `:app:assembleDebug` in the same run.
+- **Gradle doesn't see fixture changes**: fixtures aren't declared task inputs, so after editing
+  `expected.json`/photos `:core:test` may report a cached result. Use `--rerun`.
 - `gradle-wrapper.jar` is committed; `local.properties` is not (set `ANDROID_HOME` in fresh clones).
 
 ---
@@ -235,11 +237,16 @@ and rely on the label filling the frame in real photos; (2) cut ~100 MB of Java-
 them**; `python/fixtures/vinmonopolet/` is gitignored. Recreate in a fresh clone:
 
 ```bash
-cd python && .venv/bin/python tools/fetch_vinmonopolet.py     # images + metadata.json + draft expected.json
+cd python && .venv/bin/python tools/fetch_vinmonopolet.py     # images + metadata.json + expected.json link
 ```
 
-The fetched `expected.json` is only a **draft** from the shop's data; the hand-checked version
-lives only on the VPS (back it up before re-fetching; the script never overwrites existing entries).
+The **hand-checked ground truth is committed** as `python/fixtures/vinmonopolet.expected.json`
+(facts and short label snippets, no images). `fixtures/vinmonopolet/expected.json` is a symlink to it,
+created by the fetch script, so all tools read the one committed file. The shop's raw data
+(`metadata.json`, local only) differs from the labels in many places — never use it as ground truth.
+To add products: pass their codes to the script; it adds each new one to the committed file as a
+draft from the shop's data marked `"_draft": true`. Check it against the photo, fix it, remove the
+marker, then commit. Existing entries are never overwritten.
 Ground-truth rules used: score only what is printed on the front/neck label; vintage as printed
 (not the shop's current vintage); producer = winery/estate name if printed, omitted when only a
 brand is shown; country if printed or implied by a printed appellation.

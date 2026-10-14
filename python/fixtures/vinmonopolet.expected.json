@@ -1,0 +1,118 @@
+{
+  "achaval_ferrer_finca_altamira_2020.jpg": {
+    "producer": "Achaval Ferrer", "vintage": 2018, "grapes": ["Malbec"], "country": "Argentina",
+    "_text": ["achaval ferrer", "finca", "altamira", "malbec finca altamira", "producto de argentina", "2018"]
+  },
+  "bergamota_douro_2022.jpg": {
+    "appellation": "Douro", "country": "Portugal",
+    "_text": ["douro", "bergamota", "single vineyard"]
+  },
+  "bunn_strebel_fleissiges_lieschen_riesling_trocken_2020.jpg": {
+    "producer": "Bunn Strebel", "grapes": ["Riesling"],
+    "_text": ["bunn", "strebel", "busy lissy", "riesling"]
+  },
+  "casillero_del_diablo_cabernet_sauvignon_2024.jpg": {
+    "producer": "Concha y Toro", "grapes": ["Cabernet Sauvignon"], "country": "Chile",
+    "_text": ["reserva", "casillero", "diablo", "cabernet sauvignon", "chile", "concha y toro", "desde 1883"]
+  },
+  "ch_doisy_daene_2004.jpg": {
+    "producer": "Château Doisy Daëne", "appellation": "Barsac", "country": "France",
+    "_text": ["chateau", "doisy daene", "cru classe en 1855", "barsac", "grand vin de sauternes", "denis dubourdieu"]
+  },
+  "colli_tortonesi_quadro_2020.jpg": {
+    "producer": "Vigneti Repetto",
+    "_text": ["vigneti", "repetto", "derthona", "un territorio un vino un vitigno", "quadro"]
+  },
+  "dom_la_suffrene_bandol_2013.jpg": {
+    "producer": "Domaine La Suffrene", "vintage": 2013, "appellation": "Bandol", "country": "France",
+    "_text": ["domaine", "la suffrene", "millesime 2013", "bandol"]
+  },
+  "first_drop_mothers_milk_shiraz_2022.jpg": {
+    "producer": "First Drop Wines", "grapes": ["Shiraz"], "appellation": "Barossa", "country": "Australia",
+    "_text": ["the amazing story of vintage", "milk", "a tale from first drop wines", "a vineyard", "two friends", "shiraz", "barossa"]
+  },
+  "franco_conterno_barbera_d_alba_2017.jpg": {
+    "producer": "Franco Conterno", "vintage": 2017, "appellation": "Barbera d'Alba",
+    "classification": ["DOC", "Superiore"], "abv": 14.5, "volume_ml": 9000, "country": "Italy",
+    "_text": ["franco conterno", "barbera d alba", "denominazione di origine controllata", "superiore 2017",
+              "cascina sciulun", "product of italy", "prodotto in italia", "www francoconterno it"]
+  },
+  "gavignet_bethanie_nuits_saint_georges_1er_cru_aux_damodes_2021.jpg": {
+    "producer": "Gavignet-Béthanie et Filles", "vintage": 2017, "appellation": "Nuits-Saint-Georges",
+    "classification": ["AOC", "Premier Cru"], "abv": 13.5, "volume_ml": 750, "country": "France",
+    "_text": ["nuits saint georges 1er cru", "aux damodes", "2017", "gavignet bethanie et filles",
+              "mis en bouteille par", "product of france"]
+  },
+  "gigi_rosso_blagheur_langhe_chardonnay.jpg": {
+    "producer": "Gigi Rosso", "appellation": "Langhe", "classification": ["DOC"], "grapes": ["Chardonnay"], "country": "Italy",
+    "_text": ["gigi rosso", "langhe", "denominazione di origine controllata", "chardonnay", "blagheur"]
+  },
+  "k_vintners_powerline_syrah_2020.jpg": {
+    "producer": "K Vintners", "vintage": 2021, "appellation": "Walla Walla Valley", "grapes": ["Syrah"],
+    "abv": 14.0, "country": "United States",
+    "_text": ["syrah", "powerline vineyard", "walla walla valley", "2021",
+              "grown produced and bottled by k vintners", "seattle washington usa"]
+  },
+  "kaiken_ultra_pinot_noir_2023.jpg": {
+    "producer": "Kaiken", "vintage": 2021, "appellation": "Patagonia", "grapes": ["Pinot Noir"], "country": "Argentina",
+    "_text": ["kaiken", "ultra", "pinot noir", "2021", "patagonia argentina"]
+  },
+  "lis_fadis_pavar.jpg": {
+    "producer": "Lis Fadis", "grapes": ["Refosco dal Peduncolo Rosso"],
+    "_text": ["lis fadis", "vini dei colli orientali", "pavar", "refosco", "dal peduncolo rosso"]
+  },
+  "milencio.jpg": {
+    "producer": "Milénico", "vintage": 2017, "appellation": "Ribera del Duero", "classification": ["DO"],
+    "grapes": ["Tempranillo"], "country": "Spain",
+    "_text": ["milenico", "ribera del duero", "denominacion de origen", "2017", "tempranillo"]
+  },
+  "muga_seleccion_especial_reserva_2021.jpg": {
+    "producer": "Muga", "appellation": "Rioja", "classification": ["DOCa"], "country": "Spain",
+    "_text": ["muga", "seleccion especial", "rioja", "denominacion de origen calificada", "embotellado en la propiedad", "desde 1932"]
+  },
+  "natte_valleij_p_o_w_2021.jpg": {
+    "producer": "Natte Valleij", "vintage": 2014,
+    "_text": ["natte valleij", "pow", "2014", "produce of the cape of good hope", "milner bros"]
+  },
+  "opitz_traminer_beerenauslese.jpg": {
+    "producer": "Michael Opitz", "grapes": ["Traminer"], "classification": ["Beerenauslese"],
+    "_text": ["traminer", "beerenauslese", "michael opitz", "no tricks just wine"]
+  },
+  "patacon_copa_copa.jpg": {
+    "grapes": ["Cabernet Sauvignon", "Shiraz", "Carménère"], "country": "Chile",
+    "_text": ["a delicious rich blend of", "cabernet sauvignon shiraz", "and carmenere from chile",
+              "put it in a pouch and call it", "copa copa"]
+  },
+  "philippe_chavy_meursault_1er_cru_les_charmes_2022.jpg": {
+    "producer": "Philippe Chavy", "vintage": 2021, "appellation": "Meursault", "classification": ["AOC", "Premier Cru"],
+    "abv": 13.5, "volume_ml": 750, "country": "France",
+    "_text": ["2021", "meursault", "1er cru les charmes", "appellation meursault 1er cru controlee",
+              "philippe chavy", "proprietaire recoltant", "mis en bouteille"]
+  },
+  "polperro_pinot_noir_2023.jpg": {
+    "producer": "Polperro", "vintage": 2023, "appellation": "Mornington Peninsula", "grapes": ["Pinot Noir"], "country": "Australia",
+    "_text": ["2023", "pinot noir", "polperro", "mornington peninsula"]
+  },
+  "post_scriptum_de_chryseia_2023.jpg": {
+    "producer": "Prats & Symington", "vintage": 2019, "appellation": "Douro", "country": "Portugal",
+    "_text": ["post scriptum", "de chryseia", "2019", "douro", "prats symington douro portugal"]
+  },
+  "schloss_gobelsburg_zobing_riesling.jpg": {
+    "producer": "Schloss Gobelsburg", "appellation": "Kamptal", "grapes": ["Riesling"], "country": "Austria",
+    "_text": ["schloss", "gobelsburg", "osterreich austria", "zobing", "kamptal", "riesling"]
+  },
+  "squealing_pig_marlborough_sauvignon_blanc_2025.jpg": {
+    "producer": "Squealing Pig", "vintage": 2020, "appellation": "Marlborough", "grapes": ["Sauvignon Blanc"], "country": "New Zealand",
+    "_text": ["this little pig stayed home", "this little pig went wee wee wee", "squealing pig",
+              "sauvignon blanc", "marlborough new zealand"]
+  },
+  "twin_islands_sauvignon_blanc_2025.jpg": {
+    "producer": "Twin Islands", "vintage": 2021, "appellation": "Marlborough", "grapes": ["Sauvignon Blanc"], "country": "New Zealand",
+    "_text": ["twin islands", "sauvignon blanc", "marlborough 2021", "new zealand wine"]
+  },
+  "williams_selyem_anderson_valley_pinot_noir_2023.jpg": {
+    "producer": "Williams Selyem", "vintage": 2023, "appellation": "Anderson Valley", "grapes": ["Pinot Noir"],
+    "abv": 14.1, "country": "United States",
+    "_text": ["williams", "selyem", "2023", "pinot noir", "anderson valley", "mendocino county", "cellared bottled by"]
+  }
+}

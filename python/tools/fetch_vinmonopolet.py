@@ -2,17 +2,21 @@
 
 The images are copyrighted by Vinmonopolet / the producers, so the output folder is
 gitignored and must never be committed. Writes, per product, `<slug>.jpg`, plus
-`metadata.json` (the shop's data, for reference) and a draft `expected.json`.
+`metadata.json` (the shop's raw data, for reference).
 
-The draft lists what the shop knows. Only part of it is printed on the front label,
-so check every entry against its photo and delete what isn't visible before scoring
-(see docs/PROJECT_NOTES.md "Vinmonopolet test set").
+The ground truth is NOT in that folder: it is the committed file
+`fixtures/vinmonopolet.expected.json`, checked by hand against each photo (the shop's data
+often differs from the label). `<out_dir>/expected.json` is created as a symlink to it, so
+the evaluation tools find it next to the photos. Products not yet in the ground truth are
+added to it as drafts from the shop's data, marked `"_draft": true` — check each against
+its photo, fix it, and remove the marker (see docs/PROJECT_NOTES.md "Vinmonopolet test set").
 
     .venv/bin/python tools/fetch_vinmonopolet.py [out_dir] [code ...]
 """
 from __future__ import annotations
 
 import json
+import os
 import re
 import sys
 import time
@@ -28,6 +32,7 @@ CODES = [
 ]
 API = "https://www.vinmonopolet.no/vmpws"
 IMAGE = "https://bilder.vinmonopolet.no/cache/2000x2000-0/{code}-1.jpg"
+GROUND_TRUTH = Path(__file__).resolve().parent.parent / "fixtures" / "vinmonopolet.expected.json"
 HEADERS = {"User-Agent": "Mozilla/5.0 (wine-label-scanner test-set fetcher)"}
 COUNTRIES = {  # Vinmonopolet (Norwegian) -> winelabel/data/countries.txt
     "frankrike": "France", "italia": "Italy", "spania": "Spain", "portugal": "Portugal",
@@ -82,9 +87,10 @@ def main() -> None:
     out = Path(sys.argv[1] if len(sys.argv) > 1 else "fixtures/vinmonopolet")
     codes = sys.argv[2:] or CODES
     out.mkdir(parents=True, exist_ok=True)
-    meta_path, exp_path = out / "metadata.json", out / "expected.json"
+    meta_path, exp_link = out / "metadata.json", out / "expected.json"
     metadata = json.loads(meta_path.read_text()) if meta_path.exists() else {}
-    expected = json.loads(exp_path.read_text()) if exp_path.exists() else {}
+    expected = json.loads(GROUND_TRUTH.read_text()) if GROUND_TRUTH.exists() else {}
+    added = []
     for code in codes:
         detail = json.loads(get(f"{API}/v3/vmp/products/{code}?fields=FULL"))
         listing = appellation(code)
@@ -93,10 +99,17 @@ def main() -> None:
         (out / file).write_bytes(get(IMAGE.format(code=code)))
         metadata[file] = {"code": code, "url": "https://www.vinmonopolet.no" + detail.get("url", ""),
                           "detail": detail, "listing": listing}
-        expected.setdefault(file, draft(detail, listing))  # never overwrite hand-checked entries
+        if file not in expected:  # never overwrite hand-checked entries
+            expected[file] = {**draft(detail, listing), "_draft": True}
+            added.append(file)
         print(f"{file:<60} {name}")
     meta_path.write_text(json.dumps(metadata, ensure_ascii=False, indent=1))
-    exp_path.write_text(json.dumps(expected, ensure_ascii=False, indent=2))
+    if added:
+        GROUND_TRUTH.write_text(json.dumps(expected, ensure_ascii=False, indent=2) + "\n")
+        print(f"added {len(added)} unchecked draft(s) to {GROUND_TRUTH.name}: check them against the photos")
+    if exp_link.is_symlink() or exp_link.exists():
+        exp_link.unlink()
+    exp_link.symlink_to(os.path.relpath(GROUND_TRUTH, out.resolve()))
 
 
 if __name__ == "__main__":

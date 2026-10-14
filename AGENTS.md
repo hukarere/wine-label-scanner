@@ -17,6 +17,7 @@ python/               Python prototype (reference implementation, CLI, evaluatio
   fixtures/text/      OCR-line test cases (shared with Kotlin)
   fixtures/images/    8 labelled real photos + expected.json + ATTRIBUTION.md (shared)
   fixtures/vinmonopolet/  26 retailer packshots, LOCAL ONLY (copyrighted, gitignored) — tools/fetch_vinmonopolet.py
+  fixtures/vinmonopolet.expected.json  its hand-checked ground truth (committed; the folder's expected.json links here)
 android/              Android app (Gradle)
   core/               pure Kotlin/JVM: port of parser + layout + the whole OCR pipeline
   app/                Compose UI, ONNX + ML Kit engines, image loading, debug report
