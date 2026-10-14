@@ -67,6 +67,7 @@ Prioritized; none started unless noted.
 13. Created the GitHub repo (models and fixtures committed, APKs gitignored); verified a fresh clone passes `:core:test`.
 14. Added `AGENTS.md`, `CLAUDE.md` (imports AGENTS.md) and this file.
 15. Renamed the subproject folders for consistency: `wine-label-py/` → `python/`, `WineLabelScanner/` → `android/` (the Gradle project name `WineLabelScanner` and Python package `winelabel` are unchanged).
+16. Tried a headless **ARM64 emulator under software emulation** (no KVM) to test without the user. Emulator ≥ 31 refuses arm64 images on an x86_64 host; 30.4.5 boots the Android 10 (API 29) `google_apis` image, but `system_server` crash-loops (SIGABRT) because the guest kernel binds no input device (virtio-input over MMIO needs a modern virtio transport this qemu lacks; `goldfish-events` has no driver). **Abandoned and deleted** (emulator, system images, AVDs). Next approach: drive the user's real phone (Android 10) from the VPS through an SSH reverse tunnel to their local adb server (`ssh -N -R 5038:localhost:5037 grg@<vps>` on their computer, then `adb -P 5038 …` here).
 
 ---
 
@@ -136,6 +137,7 @@ app supplies `onnxruntime-android` — same `ai.onnxruntime` API.
 | Decision | Why |
 |---|---|
 | Python prototype first | No device or emulator on the VPS; Python can be tested end to end here. |
+| No emulator | No KVM; ARM64 images under software emulation crash-loop (no input devices in the guest kernel). Test on the user's phone over an adb tunnel instead. |
 | PP-OCR via ONNX (rapidocr) | Same model files in Python and on Android → prototype accuracy carries over. ML Kit has no Python. |
 | PP-OCRv6 **small** | `medium` was no more accurate on the photos and 4× slower. One multilingual model handles accents (é, ô, ü). |
 | ML Kit kept as a toggle | To compare on real bottles before committing to one engine. |

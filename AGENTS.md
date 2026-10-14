@@ -24,7 +24,7 @@ docs/PROJECT_NOTES.md history, architecture, decisions, numbers, gotchas, roadma
 
 ## Environment (the dev VPS)
 
-- **No Android device and no emulator** (no KVM). Everything testable runs on the JVM or
+- **No Android device and no emulator** (no KVM; an ARM64 emulator under software emulation was tried and fails — see PROJECT_NOTES timeline 16). Everything testable runs on the JVM or
   in Python here. The user installs APKs on their own phone and reports back.
 - JDK 17: `export JAVA_HOME=~/opt/jdk-17` (not on PATH by default — Gradle fails without it).
 - Android SDK: `~/Android/Sdk` (referenced by `android/local.properties`, gitignored;
