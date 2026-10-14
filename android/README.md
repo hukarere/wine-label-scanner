@@ -35,7 +35,7 @@ Android 7.0+ (arm64 phones).
 
 ```bash
 export JAVA_HOME=~/opt/jdk-17          # Temurin 17; Android SDK at ~/Android/Sdk (local.properties)
-./gradlew :core:test                   # 63 JVM tests, ~1 min
+./gradlew :core:test                   # 64 JVM tests, ~1 min
 ./gradlew -q :core:cli --args="eval fixtures/images"   # per-photo accuracy report
 ./gradlew :app:assembleDebug           # -> app/build/outputs/apk/debug/app-debug.apk
 ```
@@ -85,7 +85,7 @@ Results on the photo sets (identical on the VPS JVM and on the phone):
 | | Fields | Text snippets |
 |---|---|---|
 | 8 Wikimedia photos (`fixtures/images`) | 31/37 | 39/59 |
-| 26 Vinmonopolet photos (local only) | 83/108 | 123/140 |
+| 26 Vinmonopolet photos (local only) | 89/108 | 123/140 |
 
 ## Notes
 

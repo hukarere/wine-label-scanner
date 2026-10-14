@@ -43,7 +43,7 @@ docs/PROJECT_NOTES.md history, architecture, decisions, numbers, gotchas, roadma
 
 ```bash
 export JAVA_HOME=~/opt/jdk-17
-./gradlew :core:test                                  # 63 tests, ~1 min (incl. OCR on 8 photos)
+./gradlew :core:test                                  # 64 tests, ~1 min (incl. OCR on 8 photos)
 ./gradlew -q :core:cli --args="scan fixtures/images/filhot_2008.jpg [--json] [--debug-image /tmp/b.png]"
 ./gradlew -q :core:cli --args="eval fixtures/images [--only a.jpg,b.jpg] [--dump dir]"   # paths from repo root
 ./gradlew :core:test --tests winelabel.PpOcrParityTest -Pphotos=vinmonopolet [-Pdump=dir] --rerun

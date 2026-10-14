@@ -303,7 +303,17 @@ object LabelParser {
     // ------------------------------------------------------------------ grapes
 
     fun extractGrapes(lines: List<OcrLine>): Field? {
-        val hits = matchNames(lines.map { it.text }, Reference.grapes)
+        val texts = lines.map { it.text }
+        // Long names are split over two lines ("REFOSCO" / "DAL PEDUNCOLO ROSSO"): also try each
+        // pair of consecutive lines, keeping exact matches that cross the line break.
+        val split = texts.zipWithNext { a, b -> "$a $b" }.withIndex().flatMap { (i, pair) ->
+            matchNames(listOf(pair), Reference.grapes, fuzzy = false)
+                .filter { h -> listOf(texts[i], texts[i + 1]).none { h.name.key in Text.normalize(it) } }
+                .map { it.copy(line = i) }
+        }
+        val all = matchNames(texts, Reference.grapes) + split
+        // "Refosco dal Peduncolo Rosso" replaces the "Refosco" it contains.
+        val hits = all.filter { h -> all.none { o -> o.name.key != h.name.key && " ${h.name.key} " in " ${o.name.key} " } }
         if (hits.isEmpty()) return null
         val names = hits.map { it.name.display }.distinct()
         val sources = hits.map { lines[it.line].text }.distinct()

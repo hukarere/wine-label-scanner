@@ -112,6 +112,9 @@ Toscana|Italy
 Barolo|Italy
 Barbaresco|Italy
 Langhe|Italy
+Colli Tortonesi|Italy
+Friuli Colli Orientali|Italy
+Colli Orientali del Friuli|Italy
 Roero|Italy
 Barbera d'Alba|Italy
 Barbera d'Asti|Italy
@@ -185,6 +188,7 @@ Württemberg|Germany
 Ahr|Germany
 Wachau|Austria
 Kamptal|Austria
+Neusiedlersee|Austria
 Kremstal|Austria
 Burgenland|Austria
 Niederösterreich|Austria
@@ -211,6 +215,7 @@ Willamette Valley|United States
 Washington|United States
 Columbia Valley|United States
 Walla Walla Valley|United States
+Anderson Valley|United States
 Finger Lakes|United States
 Rutherford|United States
 Oakville|United States
@@ -220,6 +225,7 @@ North Coast|United States
 Calistoga|United States
 Barossa|Australia
 Barossa Valley|Australia
+Mornington Peninsula|Australia
 Eden Valley|Australia
 McLaren Vale|Australia
 Clare Valley|Australia
@@ -243,6 +249,7 @@ Rapel Valley|Chile
 Valle Central|Chile
 Central Valley|Chile
 Mendoza|Argentina
+Patagonia|Argentina
 Uco Valley|Argentina
 Valle de Uco|Argentina
 Luján de Cuyo|Argentina

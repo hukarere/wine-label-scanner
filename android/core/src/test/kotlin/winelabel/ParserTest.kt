@@ -187,6 +187,16 @@ class ParserTest {
     }
 
     @Test
+    fun grapeNameSplitOverTwoLines() {
+        val lines = listOf(l("Pavar", 60.0), l("REFOSCO"), l("DAL PEDUNCOLO ROSSO"))
+        assertEquals(listOf("Refosco dal Peduncolo Rosso"), LabelParser.extractGrapes(lines)!!.value)
+        assertEquals(listOf("Refosco"), LabelParser.extractGrapes(listOf(l("REFOSCO")))!!.value)
+        // Gewürztraminer stays itself; Traminer alone is Traminer.
+        assertEquals(listOf("Gewürztraminer"), LabelParser.extractGrapes(listOf(l("GEWURZTRAMINER")))!!.value)
+        assertEquals(listOf("Traminer"), LabelParser.extractGrapes(listOf(l("TRAMINER")))!!.value)
+    }
+
+    @Test
     fun cleanNameKeepsAccents() {
         assertEquals("Château Lafîte", LabelParser.cleanName("«Château Lafîte»"))
         assertEquals("CHÂTEAU", LabelParser.cleanName("CHÂTEAU"))

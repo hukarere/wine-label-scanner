@@ -47,6 +47,9 @@ Bobal
 Sangiovese
 Nebbiolo
 Barbera
+Timorasso
+Refosco dal Peduncolo Rosso
+Refosco
 Dolcetto
 Corvina
 Corvinone
@@ -74,6 +77,7 @@ Sagrantino
 Verdicchio
 Riesling
 Gewürztraminer
+Traminer
 Grüner Veltliner
 Müller-Thurgau
 Silvaner

@@ -29,10 +29,10 @@ Detailed record for resuming work. The short operational brief is [`AGENTS.md`](
 **Not yet verified anywhere:** the camera → TakePicture flow end to end, the
 share-into-app intent, dark theme look, the UI flow driven by taps.
 
-**Test sets:** 8 committed Commons photos (PP-OCR 31/37) + 26 local-only Vinmonopolet packshots (PP-OCR 83/108, ML Kit 71/108).
+**Test sets:** 8 committed Commons photos (PP-OCR 31/37) + 26 local-only Vinmonopolet packshots (PP-OCR 89/108; ML Kit 71/108 before the reference-data additions).
 
-**Next:** missing regions/grapes (Patagonia, Mornington Peninsula, Anderson Valley; Refosco,
-Traminer), release build, then real-bottle scans → fixtures.
+**Next:** release build (R8 + signing), then real-bottle scans → fixtures. The region/grape lists
+cover the test sets but are far from complete — every new label is a chance to add names.
 
 ## Roadmap
 
@@ -81,6 +81,7 @@ Prioritized; none started unless noted.
 22. **Producer extraction** (measured on both sets after each step; Commons unchanged at 31/37 throughout):
     vertical text measured by its letter height, not its length (`OcrLine.height`); +0.5 bonus for a name printed twice (capsule/neck + label; fuzzy, ratio ≥ 0.85); classification-only lines ("Beerenauslese") no longer candidates; lines of 6+ words (5 without a producer word) skipped as slogans; generic end words (winery, wines, estate, vineyard(s), cellar(s)) get +0.2 instead of +0.5; the chosen line is joined with a stacked or side-by-side piece of similar letter size (ratio ≥ 0.8, or any size after a bare keyword like "DOMAINE", or a connector like "del"), never with places, grapes, legal lines or pieces of 4+ words.
     **Vinmonopolet 77 → 83/108, producer 10 → 16/24**; phone identical (83/108), ML Kit 69 → 71/108. Remaining producer misses: OCR misreads (Schramsberge, Chatean, SAINTE MAGDEL cut off, Gigi Ron, Doisy "Daine", "SUFPRENE"), brand printed larger than the producer (Casillero del Diablo / Concha y Toro, Post Scriptum / Prats & Symington, Busy Lissy / Bunn Strebel), K Vintners only in "bottled by…", First Drop.
+23. **Reference data**: regions Patagonia, Mornington Peninsula, Anderson Valley, Neusiedlersee, Colli Tortonesi, Friuli Colli Orientali (+ Colli Orientali del Friuli); grapes Refosco, Refosco dal Peduncolo Rosso, Timorasso, Traminer (Gewürztraminer still wins as the longer name). Grapes split over two lines are matched like classifications (consecutive pairs, exact, crossing the break; the longer name replaces the shorter one it contains). **Vinmonopolet 83 → 89/108** (JVM = phone), Commons unchanged 31/37.
 
 ---
 
@@ -141,7 +142,7 @@ app supplies `onnxruntime-android` — same `ai.onnxruntime` API.
 
 | Suite | Count | What |
 |---|---|---|
-| `core/src/test/` (JVM) | 63 | parser fixtures (`fixtures/text`), parser/layout units, noise filter, synthetic rendered label (0°/7°), OCR on the 8 photos (floors + similarity to the frozen golden output), ICU regex guard |
+| `core/src/test/` (JVM) | 64 | parser fixtures (`fixtures/text`), parser/layout units, noise filter, synthetic rendered label (0°/7°), OCR on the 8 photos (floors + similarity to the frozen golden output), ICU regex guard |
 | `app/src/androidTest/` (phone) | 2 | `DeviceScanTest`: each engine on a photo set through the app's own scan path; floors only for `images` |
 
 ---
@@ -189,6 +190,7 @@ Remaining misses are OCR-limited: script fonts (Château Poujeaux), text cut off
 | ML Kit, phone | 69/108 | 104/140 | 4/24 | 0/5, 0/3 | 0.4 s/photo | 304 MB |
 | **Kotlin PP-OCR after producer work** (timeline 22), JVM = phone | **83/108** | 123/140 | **16/24** | 2/5, 1/3 | | 720 MB (26 in one process) |
 | ML Kit, phone, after producer work | 71/108 | 104/140 | | | | 294 MB |
+| **Kotlin PP-OCR after reference data** (timeline 23), JVM = phone | **89/108** | 123/140 | 16/24 | 2/5, 1/3 | | 704 MB |
 
 Per field (PP-OCR / ML Kit): vintage 14/14 both, appellation 14/18 both, grapes 13/16 both,
 classification 5/7 both, country 18/21 vs 19/21. Producer misses differ in kind: ML Kit misreads
