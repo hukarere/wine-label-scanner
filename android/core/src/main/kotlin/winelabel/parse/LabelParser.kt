@@ -6,7 +6,7 @@ import java.time.LocalDate
 
 /**
  * Line-for-line port of winelabel/parser.py. Keep the two in sync: both run the
- * shared fixtures in wine-label-py/fixtures/text.
+ * shared fixtures in python/fixtures/text.
  */
 
 const val FUZZY_MIN_LEN = 6        // names shorter than this must match exactly

@@ -53,7 +53,7 @@ Prioritized; none started unless noted.
 1. User asked whether code could read all text on a wine label. Feasible: OCR; hard parts are curved labels, decorative fonts, glare.
 2. Planned an Android Kotlin app (ML Kit). The user pointed out there's **no Android device** reachable from the VPS (also no KVM → no emulator) → decided to **prototype in Python first**, where everything can be tested.
 3. Engine choice: ML Kit has no Python version, so a Python prototype couldn't predict its accuracy. Chose **PaddleOCR PP-OCR via ONNX Runtime (rapidocr)**, because the same `.onnx` files run on Android with `onnxruntime-android` → measured accuracy carries over.
-4. Built the Python prototype (`wine-label-py`): preprocessing, OCR wrapper, reading-order layout, regex/dictionary field parser, CLI, 8 hand-written OCR-line fixtures, synthetic-label OCR smoke test.
+4. Built the Python prototype (`python`): preprocessing, OCR wrapper, reading-order layout, regex/dictionary field parser, CLI, 8 hand-written OCR-line fixtures, synthetic-label OCR smoke test.
 5. Tested on 8 real Wikimedia Commons photos (ground truth in `fixtures/images/expected.json`). Baseline 24/37 fields, 40/59 text snippets. A parameter sweep showed model size and detector thresholds barely matter; the misses were parser- or OCR-limited.
 6. Parser improvements from the failures: glued multi-word names, classification split across two lines, prefix fuzzy match for truncated long names, country inferred from classification, producer cleanup and same-row merge, `750 MLS`, noise-line filter → 30/37 fields.
 7. User asked about an APK. Plan: Kotlin `core` (pure JVM, testable here) + Compose `app`, **ONNX engine plus an ML Kit toggle** for comparison, delivery by scp/adb.
@@ -66,6 +66,7 @@ Prioritized; none started unless noted.
 12. The log showed `PatternSyntaxException` for `(?U)`: Android uses **ICU** regex. Replaced `(?U)`/`(?iu)` and added `AndroidRegexCompatTest`. Rebuilt the APK (the user has not yet reported scan results with it).
 13. Created the GitHub repo (models and fixtures committed, APKs gitignored); verified a fresh clone passes `:core:test`.
 14. Added `AGENTS.md`, `CLAUDE.md` (imports AGENTS.md) and this file.
+15. Renamed the subproject folders for consistency: `wine-label-py/` → `python/`, `WineLabelScanner/` → `android/` (the Gradle project name `WineLabelScanner` and Python package `winelabel` are unchanged).
 
 ---
 
@@ -100,7 +101,7 @@ photo
 
 ### Kotlin modules
 
-| Python | Kotlin (`WineLabelScanner/core/src/main/kotlin/winelabel/`) |
+| Python | Kotlin (`android/core/src/main/kotlin/winelabel/`) |
 |---|---|
 | `model.py` | `model/OcrLine.kt`, `model/RgbImage.kt` (0xRRGGBB ints) |
 | `layout.py` | `layout/Layout.kt` |
@@ -112,7 +113,7 @@ photo
 `core` compiles against `com.microsoft.onnxruntime:onnxruntime` (`compileOnly`, desktop); the
 app supplies `onnxruntime-android` — same `ai.onnxruntime` API.
 
-### App (`WineLabelScanner/app/src/main/kotlin/winelabel/app/`)
+### App (`android/app/src/main/kotlin/winelabel/app/`)
 
 - `MainActivity` — Compose host; accepts `ACTION_SEND image/*` (share a photo into the app).
 - `ScanViewModel` — `UiState` Idle / Working / Done(result, timings) / Error(message, details); engine choice persisted in SharedPreferences; keeps the last image for "Re-scan with other engine"; logs errors with tag `WineLabel`.
@@ -126,7 +127,7 @@ app supplies `onnxruntime-android` — same `ai.onnxruntime` API.
 | Suite | Count | What |
 |---|---|---|
 | Python `tests/` | 57 | parser fixtures + units, layout, synthetic-label OCR smoke test, real-photo accuracy floors |
-| Kotlin `core/src/test/` | 55 | same parser fixtures (read from `../wine-label-py/fixtures`), units mirroring Python, OCR parity on 8 photos vs. Python goldens, ICU regex guard |
+| Kotlin `core/src/test/` | 55 | same parser fixtures (read from `../python/fixtures`), units mirroring Python, OCR parity on 8 photos vs. Python goldens, ICU regex guard |
 
 ---
 
@@ -143,11 +144,11 @@ app supplies `onnxruntime-android` — same `ai.onnxruntime` API.
 | arm64-v8a only | Covers essentially all current phones; halves native-library size. |
 | `TakePicture` intent instead of CameraX | No camera permission and no preview code; the system camera does the work. |
 | Models committed to git | Clone-and-build simplicity; each file < 100 MB. |
-| Shared fixtures, not copied | Kotlin tests read `../wine-label-py/fixtures` so both languages always test the same cases. |
+| Shared fixtures, not copied | Kotlin tests read `../python/fixtures` so both languages always test the same cases. |
 
 ## Measurements
 
-8 real photos (`wine-label-py/fixtures/images`), 37 expected fields, 59 expected text snippets. VPS, 2 CPUs.
+8 real photos (`python/fixtures/images`), 37 expected fields, 59 expected text snippets. VPS, 2 CPUs.
 
 | Pipeline | Fields | Text snippets | Notes |
 |---|---|---|---|
@@ -178,7 +179,7 @@ APK (debug): 74 MB = models 32 MB (det 9.9, rec 21.2, cls 0.6) + ONNX Runtime 18
 
 ## Adding a test case
 
-**From a debug report** (no photo): create `wine-label-py/fixtures/text/<name>.json`:
+**From a debug report** (no photo): create `python/fixtures/text/<name>.json`:
 
 ```json
 {
@@ -193,7 +194,7 @@ APK (debug): 74 MB = models 32 MB (det 9.9, rec 21.2, cls 0.6) + ONNX Runtime 18
 classification (list), grapes (list), abv, volume_ml, country`; omit a key to not check it,
 use `null` to require "not found". Both `pytest` and `./gradlew :core:test` pick it up automatically.
 
-**From a photo**: add the image to `wine-label-py/fixtures/images/`, an entry in
+**From a photo**: add the image to `python/fixtures/images/`, an entry in
 `expected.json` (fields plus `_text`: normalized snippets — lowercase, no accents or
 punctuation), and a row in `ATTRIBUTION.md` (only freely licensed photos; this repo is
 public). Then regenerate the Kotlin golden (below). Accuracy floors live in
@@ -204,24 +205,24 @@ public). Then regenerate the Kotlin golden (below). Accuracy floors live in
 Regenerate Kotlin goldens after changing photos or the Python OCR:
 
 ```bash
-cd wine-label-py
+cd python
 for f in fixtures/images/*.jpg; do b=$(basename "$f" .jpg)
   .venv/bin/python -m winelabel scan "$f" --json --no-enhance \
-    > ../WineLabelScanner/core/src/test/resources/golden/$b.json
+    > ../android/core/src/test/resources/golden/$b.json
 done
 ```
 
 Regenerate the recognizer alphabet after changing the rec model:
 
 ```bash
-cd WineLabelScanner
-../wine-label-py/.venv/bin/python -c "
+cd android
+../python/.venv/bin/python -c "
 import onnxruntime as ort
 m = ort.InferenceSession('app/src/main/assets/models/PP-OCRv6_rec_small.onnx').get_modelmeta().custom_metadata_map['character']
 open('app/src/main/assets/models/ppocrv6_keys.txt', 'w', encoding='utf-8', newline='\n').write(m)"
 ```
 
-Models come from rapidocr's cache: `wine-label-py/.venv/lib/python3*/site-packages/rapidocr/models/`
+Models come from rapidocr's cache: `python/.venv/lib/python3*/site-packages/rapidocr/models/`
 (downloaded on first `winelabel scan`).
 
 Toolchain reinstall (user space): Temurin JDK 17 → `~/opt/jdk-17`; Android cmdline-tools →

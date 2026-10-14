@@ -11,12 +11,12 @@ appellation, classification, grapes, ABV, volume, country). On-device OCR with
 PaddleOCR PP-OCRv6 models on ONNX Runtime.
 
 ```
-wine-label-py/        Python prototype (reference implementation, CLI, evaluation)
+python/               Python prototype (reference implementation, CLI, evaluation)
   winelabel/          preprocess, ocr (rapidocr), layout, parser, scanner, evaluate, cli
   winelabel/data/     grapes.txt, regions.txt (name|country), countries.txt (name|aliases)
   fixtures/text/      OCR-line test cases (shared with Kotlin)
   fixtures/images/    8 labelled real photos + expected.json + ATTRIBUTION.md (shared)
-WineLabelScanner/     Android app (Gradle)
+android/              Android app (Gradle)
   core/               pure Kotlin/JVM: port of parser + layout + the whole OCR pipeline
   app/                Compose UI, ONNX + ML Kit engines, image loading, debug report
 docs/PROJECT_NOTES.md history, architecture, decisions, numbers, gotchas, roadmap
@@ -27,21 +27,21 @@ docs/PROJECT_NOTES.md history, architecture, decisions, numbers, gotchas, roadma
 - **No Android device and no emulator** (no KVM). Everything testable runs on the JVM or
   in Python here. The user installs APKs on their own phone and reports back.
 - JDK 17: `export JAVA_HOME=~/opt/jdk-17` (not on PATH by default — Gradle fails without it).
-- Android SDK: `~/Android/Sdk` (referenced by `WineLabelScanner/local.properties`, gitignored;
+- Android SDK: `~/Android/Sdk` (referenced by `android/local.properties`, gitignored;
   in a fresh clone set `ANDROID_HOME=~/Android/Sdk`).
-- Python: `wine-label-py/.venv` (create with `python3 -m venv .venv && .venv/bin/pip install -e '.[dev]'`).
+- Python: `python/.venv` (create with `python3 -m venv .venv && .venv/bin/pip install -e '.[dev]'`).
 - Git: remote `git@github.com:hukarere/wine-label-scanner.git` (public); the repo's
   `core.sshCommand` uses `~/.ssh/github-hukarere`. No `gh` CLI.
 
 ## Commands
 
 ```bash
-# Python (from wine-label-py/)
+# Python (from python/)
 .venv/bin/pytest -q                                   # 57 tests, ~25 s
 .venv/bin/winelabel scan photo.jpg [--json] [--debug-image boxes.png] [--no-enhance]
 .venv/bin/winelabel eval fixtures/images [--no-enhance]   # per-field accuracy
 
-# Android (from WineLabelScanner/)
+# Android (from android/)
 export JAVA_HOME=~/opt/jdk-17
 ./gradlew :core:test                                  # 55 tests, ~1 min (incl. OCR on 8 photos)
 ./gradlew :app:assembleDebug                          # app/build/outputs/apk/debug/app-debug.apk
@@ -56,10 +56,10 @@ copy a stale APK.
 ## Rules / invariants
 
 1. **The parser exists twice and must stay in sync**:
-   `wine-label-py/winelabel/parser.py` ↔ `WineLabelScanner/core/src/main/kotlin/winelabel/parse/LabelParser.kt`,
+   `python/winelabel/parser.py` ↔ `android/core/src/main/kotlin/winelabel/parse/LabelParser.kt`,
    `normalize()` ↔ `parse/Text.kt`, `layout.py` ↔ `layout/Layout.kt`, `scanner.is_noise` ↔ `Scanner.isNoise`.
    Change both, run both test suites. Data lists are copied:
-   `wine-label-py/winelabel/data/*.txt` → `WineLabelScanner/core/src/main/resources/winelabel/data/` (keep identical).
+   `python/winelabel/data/*.txt` → `android/core/src/main/resources/winelabel/data/` (keep identical).
 2. **Android regexes run on ICU, not java.util.regex**: only inline flags `i m s x w` are
    allowed. Use `RegexOption.IGNORE_CASE` instead of `(?iu)`, `\p{L}\p{N}_` instead of `(?U)\w`.
    `AndroidRegexCompatTest` guards this; JVM tests can't otherwise catch it.

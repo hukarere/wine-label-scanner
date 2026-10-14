@@ -16,9 +16,9 @@ import winelabel.model.OcrLine
 import winelabel.parse.Text
 import java.io.File
 
-/** Access to the fixtures shared with the Python prototype (../wine-label-py/fixtures). */
+/** Access to the fixtures shared with the Python prototype (../python/fixtures). */
 object Fixtures {
-    val root = File(System.getProperty("winelabel.fixtures") ?: "../../wine-label-py/fixtures")
+    val root = File(System.getProperty("winelabel.fixtures") ?: "../../python/fixtures")
     val modelsDir = File(System.getProperty("winelabel.models") ?: "../app/src/main/assets/models")
 
     fun readJson(file: File): JsonElement = Json.parseToJsonElement(file.readText())

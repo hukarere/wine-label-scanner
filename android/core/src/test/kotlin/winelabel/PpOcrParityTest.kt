@@ -15,7 +15,7 @@ import java.io.File
 import javax.imageio.ImageIO
 
 /**
- * The Kotlin OCR pipeline on the 8 real photos in wine-label-py/fixtures/images:
+ * The Kotlin OCR pipeline on the 8 real photos in python/fixtures/images:
  * same accuracy floors as tests/test_images.py, and OCR text close to the Python
  * pipeline's output (golden JSON from `winelabel scan --json --no-enhance`).
  */

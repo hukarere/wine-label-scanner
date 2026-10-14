@@ -5,7 +5,7 @@ fields** (producer, vintage, appellation, classification, grapes, ABV, volume,
 country). Fully on-device, two switchable OCR engines:
 
 - **PP-OCR (ONNX)** — PP-OCRv6 det/rec + orientation classifier on ONNX Runtime;
-  the same models and pipeline as the Python prototype in `../wine-label-py`.
+  the same models and pipeline as the Python prototype in `../python`.
 - **ML Kit** — Google's on-device Latin text recognizer, for comparison.
 
 ## Install the debug APK
@@ -63,9 +63,9 @@ app/    Android (Compose)
 
 | Test | What it checks |
 |---|---|
-| `ParserFixtureTest` | `../wine-label-py/fixtures/text` cases — the same files the Python tests use |
+| `ParserFixtureTest` | `../python/fixtures/text` cases — the same files the Python tests use |
 | `ParserTest`, `LayoutTest` | Mirrors `test_parser.py` / `test_layout.py` |
-| `PpOcrParityTest` | Kotlin OCR on the 8 real photos in `../wine-label-py/fixtures/images`: accuracy floors, and OCR text vs. Python golden output (`core/src/test/resources/golden`) |
+| `PpOcrParityTest` | Kotlin OCR on the 8 real photos in `../python/fixtures/images`: accuracy floors, and OCR text vs. Python golden output (`core/src/test/resources/golden`) |
 
 Current results on the 8 photos (VPS, 2 CPUs):
 

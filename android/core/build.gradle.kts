@@ -15,7 +15,7 @@ dependencies {
     testRuntimeOnly(libs.junit.launcher)
 }
 
-val pyProject = rootProject.file("../wine-label-py")
+val pyProject = rootProject.file("../python")
 
 tasks.test {
     useJUnitPlatform()
