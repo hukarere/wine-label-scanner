@@ -26,6 +26,7 @@ fixtures/
   vinmonopolet.expected.json  its hand-checked ground truth (committed; the folder's expected.json links here)
 tools/fetch_vinmonopolet.py   recreate the local-only set (python3, stdlib only)
 docs/PROJECT_NOTES.md history, architecture, decisions, numbers, gotchas, roadmap
+docs/RELEASE_PLAN.md  plan for the release build (R8, signing key) — not started
 ```
 
 ## Environment (the dev VPS)

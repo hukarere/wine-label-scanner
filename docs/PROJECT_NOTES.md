@@ -31,7 +31,7 @@ share-into-app intent, dark theme look, the UI flow driven by taps.
 
 **Test sets:** 8 committed Commons photos (PP-OCR 31/37) + 26 local-only Vinmonopolet packshots (PP-OCR 89/108; ML Kit 71/108 before the reference-data additions).
 
-**Next:** release build (R8 + signing), then real-bottle scans → fixtures. The region/grape lists
+**Next:** release build ([`RELEASE_PLAN.md`](RELEASE_PLAN.md), open questions first), then real-bottle scans → fixtures. The region/grape lists
 cover the test sets but are far from complete — every new label is a chance to add names.
 
 ## Roadmap
@@ -41,7 +41,7 @@ Prioritized; none started unless noted.
 0. ~~PP-OCR memory on 2–3 GB phones~~ — done (budgeted detector cap); watch `det_capped` in debug reports from real use.
 1. **Collect real-scan debug reports** → add as fixtures (see [Adding a test case](#adding-a-test-case)) → parser fixes.
 2. ~~Choose an engine~~ — decided 2026-10-14: **PP-OCR is the default; ML Kit stays as a user toggle** (fast option: 0.4 s vs 5 s per scan). Cost accepted: ~12 MB APK, its INTERNET/ACCESS_NETWORK_STATE permissions, ML Kit only testable on the phone — re-check it there occasionally (`tools/device-test.sh MLKIT`), not on every parser change.
-3. **Release build**: enable R8 (`isMinifyEnabled`, check ONNX Runtime keep rules), release signing key, smaller APK (~10 MB of debug dex goes away).
+3. **Release build** — fully planned in [`RELEASE_PLAN.md`](RELEASE_PLAN.md) (R8 + keep rules, own signing key, testing on the phone; ~74 → ~64 MB). Three open questions for the user listed there; not started.
 4. **Capture quality**: in-app guidance; multi-shot for curved labels (left/centre/right photos, merge lines by text similarity).
 5. Producer extraction: improved 10 → 16/24 (timeline 22). Left: brand vs producer (labels print the brand larger; maybe show both), names only in "bottled by X" lines, OCR misreads of script fonts.
 6. Optional: CLAHE contrast enhancement (the retired Python prototype measured +2 text snippets, −2 fields on the 8 photos — unclear benefit).
