@@ -29,10 +29,10 @@ Detailed record for resuming work. The short operational brief is [`AGENTS.md`](
 **Not yet verified anywhere:** the camera → TakePicture flow end to end, the
 share-into-app intent, dark theme look, the UI flow driven by taps.
 
-**Test sets:** 8 committed Commons photos + 26 local-only Vinmonopolet packshots (PP-OCR 77/108 vs ML Kit 69/108 on those).
+**Test sets:** 8 committed Commons photos (PP-OCR 31/37) + 26 local-only Vinmonopolet packshots (PP-OCR 83/108, ML Kit 71/108).
 
-**Next:** producer extraction in the parser (PP-OCR reads most producers but the parser picks or
-splits the wrong line), missing regions/grapes, then real-bottle scans → fixtures → choose the engine.
+**Next:** missing regions/grapes (Patagonia, Mornington Peninsula, Anderson Valley; Refosco,
+Traminer), release build, then real-bottle scans → fixtures.
 
 ## Roadmap
 
@@ -43,7 +43,7 @@ Prioritized; none started unless noted.
 2. ~~Choose an engine~~ — decided 2026-10-14: **PP-OCR is the default; ML Kit stays as a user toggle** (fast option: 0.4 s vs 5 s per scan). Cost accepted: ~12 MB APK, its INTERNET/ACCESS_NETWORK_STATE permissions, ML Kit only testable on the phone — re-check it there occasionally (`tools/device-test.sh MLKIT`), not on every parser change.
 3. **Release build**: enable R8 (`isMinifyEnabled`, check ONNX Runtime keep rules), release signing key, smaller APK (~10 MB of debug dex goes away).
 4. **Capture quality**: in-app guidance; multi-shot for curved labels (left/centre/right photos, merge lines by text similarity).
-5. Producer extraction is the weakest field (decorative/script fonts). Ideas: prefer a producer-keyword line over the largest line more aggressively; use the photo's top third; fuzzy-join split rows.
+5. Producer extraction: improved 10 → 16/24 (timeline 22). Left: brand vs producer (labels print the brand larger; maybe show both), names only in "bottled by X" lines, OCR misreads of script fonts.
 6. Optional: CLAHE contrast enhancement (the retired Python prototype measured +2 text snippets, −2 fields on the 8 photos — unclear benefit).
 7. Optional: int8-quantized models (smaller/faster; must re-measure accuracy).
 8. `armeabi-v7a` build if a 32-bit phone shows up (`INSTALL_FAILED_NO_MATCHING_ABIS`).
@@ -78,6 +78,9 @@ Prioritized; none started unless noted.
 19. PP-OCR memory work. Lighter detectors (v6 tiny, v5/v4 mobile) tie on Vinmonopolet but lose 7–9 fields on Commons and save at most ~150 MB → rejected. Cut Java copies: `Scanner.prepare` resizes one channel at a time from the packed pixels; the detector tensor is resized+normalized straight into a direct buffer that ORT uses without copying — **bit-identical OCR output on all 34 photos** (`-Pdump` diff), peaks −40…80 MB. Added `PpOcrEngine.detMaxPixels` (default 0 = off, so JVM/Python parity is unchanged) and `AppScan`/`DeviceMemory`: before each ONNX scan the app caps the detector input to (availMem − threshold − 64 MB) / 170 B, min 1 MP. Debug report gains `det_input`, `det_capped`, `det_max_pixels`, `avail_mem_mb`; the UI says "reduced detail: low memory".
 20. **Retired the Python prototype.** It doubled every parser change, and the Kotlin `core` on the JVM is the more faithful test bed (it gives the phone's exact results; Python scored 74 vs 77/108 on Vinmonopolet). Moved `python/fixtures/` → `fixtures/` and the fetch script → `tools/`; added the desktop CLI (`core/src/cli`: `scan`, `eval`, shared `Evaluate` used by the tests too); ported the two Python-only tests (noise filter, synthetic rendered label at 0°/7°) → 58 Kotlin tests. CLI `eval --dump` output is identical to the pre-move baseline on all 34 photos. The golden OCR output in `core/src/test/resources/golden/` stays as a frozen reference.
 21. **Detector size rounding** now matches rapidocr: multiples of 32 with halves to even (`Math.rint`), so a 2000 px side becomes 1984, not 2016 — this hits every camera photo (the app shrinks them to a 2000 px long side). Changed exactly the 7 affected photos of 34: fields unchanged (31/37, 77/108), Commons text 38→39/59, ~1.6 % fewer detector pixels. Phone: identical (31/37, 39/59), all 8 in one process peak 731 MB (was 764).
+22. **Producer extraction** (measured on both sets after each step; Commons unchanged at 31/37 throughout):
+    vertical text measured by its letter height, not its length (`OcrLine.height`); +0.5 bonus for a name printed twice (capsule/neck + label; fuzzy, ratio ≥ 0.85); classification-only lines ("Beerenauslese") no longer candidates; lines of 6+ words (5 without a producer word) skipped as slogans; generic end words (winery, wines, estate, vineyard(s), cellar(s)) get +0.2 instead of +0.5; the chosen line is joined with a stacked or side-by-side piece of similar letter size (ratio ≥ 0.8, or any size after a bare keyword like "DOMAINE", or a connector like "del"), never with places, grapes, legal lines or pieces of 4+ words.
+    **Vinmonopolet 77 → 83/108, producer 10 → 16/24**; phone identical (83/108), ML Kit 69 → 71/108. Remaining producer misses: OCR misreads (Schramsberge, Chatean, SAINTE MAGDEL cut off, Gigi Ron, Doisy "Daine", "SUFPRENE"), brand printed larger than the producer (Casillero del Diablo / Concha y Toro, Post Scriptum / Prats & Symington, Busy Lissy / Bunn Strebel), K Vintners only in "bottled by…", First Drop.
 
 ---
 
@@ -138,7 +141,7 @@ app supplies `onnxruntime-android` — same `ai.onnxruntime` API.
 
 | Suite | Count | What |
 |---|---|---|
-| `core/src/test/` (JVM) | 58 | parser fixtures (`fixtures/text`), parser/layout units, noise filter, synthetic rendered label (0°/7°), OCR on the 8 photos (floors + similarity to the frozen golden output), ICU regex guard |
+| `core/src/test/` (JVM) | 63 | parser fixtures (`fixtures/text`), parser/layout units, noise filter, synthetic rendered label (0°/7°), OCR on the 8 photos (floors + similarity to the frozen golden output), ICU regex guard |
 | `app/src/androidTest/` (phone) | 2 | `DeviceScanTest`: each engine on a photo set through the app's own scan path; floors only for `images` |
 
 ---
@@ -170,7 +173,7 @@ app supplies `onnxruntime-android` — same `ai.onnxruntime` API.
 | Python, CLAHE (default) | 30/37 | 40/59 | ~2 s/photo |
 | Python, `--no-enhance` | 32/37 | 38/59 | |
 | Kotlin `core` on the JVM | 31/37 | 38/59 | OCR text similarity to Python 0.971; 1–3 s/photo |
-| Kotlin, half-even size rounding (timeline 21) | 31/37 | **39/59** | current |
+| Kotlin, half-even size rounding (timeline 21) | 31/37 | **39/59** | current (producer work, timeline 22, changed nothing here) |
 
 Parameter sweep (Python, before the later parser fixes): medium model 24/37 and 37/59 at 4× the time; detector `limit_side_len` 960/1280 and lower thresholds changed results by ±1–2; upscaling small photos helped only one image.
 
@@ -184,6 +187,8 @@ Remaining misses are OCR-limited: script fonts (Château Poujeaux), text cut off
 | Kotlin PP-OCR, JVM | 77/108 | 123/140 | 10/24 | 2/5, 1/3 | 1.2 s/photo (VPS) | |
 | Kotlin PP-OCR, phone (one photo per process) | **77/108** | **123/140** | 10/24 | 2/5, 1/3 | 5.4 s/photo | median 449 MB, max 782 MB (the two 1554-wide photos) |
 | ML Kit, phone | 69/108 | 104/140 | 4/24 | 0/5, 0/3 | 0.4 s/photo | 304 MB |
+| **Kotlin PP-OCR after producer work** (timeline 22), JVM = phone | **83/108** | 123/140 | **16/24** | 2/5, 1/3 | | 720 MB (26 in one process) |
+| ML Kit, phone, after producer work | 71/108 | 104/140 | | | | 294 MB |
 
 Per field (PP-OCR / ML Kit): vintage 14/14 both, appellation 14/18 both, grapes 13/16 both,
 classification 5/7 both, country 18/21 vs 19/21. Producer misses differ in kind: ML Kit misreads

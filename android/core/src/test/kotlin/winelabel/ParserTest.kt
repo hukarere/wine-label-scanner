@@ -141,6 +141,51 @@ class ParserTest {
         assertEquals("Christina Dhom", LabelParser.parse(lines).producer!!.value)
     }
 
+    /** A line box at (x, y) of size w×h. */
+    private fun at(text: String, x: Double, y: Double, w: Double, h: Double) = OcrLine.rect(text, 0.99, x, y, w, h)
+
+    @Test
+    fun producerOverTwoStackedLines() {
+        // Same letter size, directly stacked: one name (Williams Selyem); the small legal line loses.
+        val williams = listOf(
+            at("WILLIAMS", 120.0, 1164.0, 425.0, 73.0), at("SELYEM", 156.0, 1233.0, 342.0, 68.0),
+            at("2023", 243.0, 1400.0, 168.0, 68.0), at("PINOT NOIR", 114.0, 1448.0, 427.0, 80.0),
+            at("Williams Selyem Winery", 176.0, 1663.0, 303.0, 37.0),
+        )
+        assertEquals("WILLIAMS SELYEM", LabelParser.parse(williams).producer!!.value)
+        // A keyword alone takes the line below even if its letters are bigger.
+        val schloss = listOf(at("SCHLOSS", 231.0, 798.0, 123.0, 26.0), at("GOBELSBURG", 183.0, 820.0, 218.0, 41.0),
+            at("ZÖBING", 210.0, 1627.0, 150.0, 37.0), at("Riesling", 239.0, 1687.0, 92.0, 28.0))
+        assertEquals("SCHLOSS GOBELSBURG", LabelParser.parse(schloss).producer!!.value)
+    }
+
+    @Test
+    fun cuveeUnderProducerIsNotJoined() {
+        // Different letter size: a cuvée name, not the rest of the producer's name.
+        val lines = listOf(at("Muga", 200.0, 600.0, 260.0, 122.0), at("Selección Especial", 160.0, 720.0, 380.0, 90.0),
+            at("RIOJA", 250.0, 830.0, 150.0, 40.0))
+        assertEquals("Muga", LabelParser.parse(lines).producer!!.value)
+    }
+
+    @Test
+    fun producerNamePrintedTwiceWins() {
+        // Script "ultra" is taller, but "KAIKEN" is on the capsule and the label.
+        val lines = listOf(at("KAIKEN", 330.0, 200.0, 26.0, 137.0), at("KAIKEN", 200.0, 1300.0, 317.0, 60.0),
+            at("ultra", 250.0, 1380.0, 220.0, 117.0), at("PINOT NOIR", 270.0, 1500.0, 174.0, 34.0))
+        assertEquals("KAIKEN", LabelParser.parse(lines).producer!!.value)
+    }
+
+    @Test
+    fun slogansAndClassificationsAreNotProducers() {
+        val pig = listOf(at("this little pig stayed home", 0.0, 0.0, 500.0, 44.0),
+            at("this little pig went wee wee wee", 0.0, 60.0, 500.0, 43.0),
+            at("sauvignon blanc", 300.0, 200.0, 200.0, 32.0), at("squealing pig", 0.0, 200.0, 200.0, 33.0))
+        assertEquals("squealing pig", LabelParser.parse(pig).producer!!.value)
+        val opitz = listOf(at("TRAMINER", 0.0, 0.0, 200.0, 34.0), at("Beerenauslese", 0.0, 50.0, 200.0, 35.0),
+            at("MICHAEL OPITZ", 0.0, 600.0, 200.0, 35.0))
+        assertEquals("MICHAEL OPITZ", LabelParser.parse(opitz).producer!!.value)
+    }
+
     @Test
     fun cleanNameKeepsAccents() {
         assertEquals("Château Lafîte", LabelParser.cleanName("«Château Lafîte»"))

@@ -30,6 +30,13 @@ class LayoutTest {
     }
 
     @Test
+    fun heightOfVerticalText() {
+        // Sideways "ALC. 14% BY VOL." detected upright: 26 wide, 137 tall -> letters are 26 px.
+        val line = OcrLine.rect("ALC. 14% BY VOL.", 1.0, 0.0, 0.0, 26.0, 137.0)
+        assertEquals(26.0, line.height, 1e-6)
+    }
+
+    @Test
     fun empty() {
         assertEquals("", Layout.rawText(emptyList()))
     }

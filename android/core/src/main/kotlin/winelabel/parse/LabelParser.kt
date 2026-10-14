@@ -363,6 +363,9 @@ object LabelParser {
         """\b(chateau|domaine|clos|maison|bodegas?|weingut|schloss|tenuta|cantina|cantine|azienda|""" +
             """fattoria|castello|quinta|herdade|vina|winery|wines|estate|vineyards?|cellars?)\b"""
     )
+    // Generic words that end names but also fill slogans and legal lines ("POWERLINE VINEYARD",
+    // "GOOD WINES TO BE SHARED", "Williams Selyem Winery" under the big "WILLIAMS SELYEM").
+    private val generic = setOf("winery", "wines", "estate", "vineyard", "vineyards", "cellar", "cellars")
     // Lines that mention a producer word but are bottling/legal statements.
     private val bottling = Regex(
         """\b(mis en bouteille|bottled|imbottigliato|embotellado|engarrafado|abgefullt|""" +
@@ -376,17 +379,27 @@ object LabelParser {
         val maxH = lines.maxOfOrNull { it.height }?.takeIf { it != 0.0 } ?: 1.0
         data class Candidate(val score: Double, val index: Int, val conf: Double)
         val candidates = mutableListOf<Candidate>()
+        val norms = lines.map { Text.normalize(it.text) }
         for ((i, line) in lines.withIndex()) {
-            val norm = Text.normalize(line.text)
+            val norm = norms[i]
             if (bottling.containsMatchIn(norm) || notVintage.containsMatchIn(norm) ||
                 nonLetters.replace(norm, "").length < 3
             ) continue
+            val keywords = producerWords.findAll(norm).map { it.value }.toList()
+            val keyword = keywords.isNotEmpty()
+            // Names are short: sentences and slogans ("this little pig stayed home") are not,
+            // however large. 5 words only with a keyword ("Domaine de la Romanée Conti").
+            val words = norm.split(' ').count { it.isNotEmpty() }
+            if (words > 5 || (words == 5 && !keyword)) continue
+            // The producer's name is often printed twice (capsule or neck label + label).
+            val repeated = if (norms.indices.any { j -> j != i && sameName(norm, norms[j]) }) REPEAT_BONUS else 0.0
             // A producer keyword is a bonus, not an override: big unmarked names
             // ("CLOUDY BAY") should still beat small print like "Maison fondée en 1772".
-            if (producerWords.containsMatchIn(norm)) {
-                candidates.add(Candidate(0.5 + line.height / maxH, i, 0.9))
+            if (keyword) {
+                val bonus = if (keywords.all { it in generic }) 0.2 else 0.5
+                candidates.add(Candidate(bonus + repeated + line.height / maxH, i, 0.9))
             } else if (i !in claimed) {
-                candidates.add(Candidate(line.height / maxH, i, 0.6))
+                candidates.add(Candidate(repeated + line.height / maxH, i, 0.6))
             }
         }
         // Python's max() over (score, index, conf) tuples.
@@ -394,9 +407,63 @@ object LabelParser {
         // Big names are often split into pieces on one row ("Christina" | "Dhom").
         val best = lines[top.index]
         val row = Layout.groupRows(lines).first { best in it }
-        val parts = row.filter { it === best || (it.height >= 0.7 * best.height && lines.indexOf(it) !in claimed) }
+        fun joinable(i: Int) = i !in claimed && !mentionsPlaceOrGrape(lines[i].text) &&
+            !bottling.containsMatchIn(norms[i]) && nonLetters.replace(norms[i], "").length >= 2 &&
+            norms[i].split(' ').count { it.isNotEmpty() } <= 3
+        val rowParts = row.filter { it === best || (it.height >= 0.7 * best.height && joinable(lines.indexOf(it))) }
+        // ...or over two lines ("SCHLOSS" / "GOBELSBURG", "DOMAINE" / "LA SUFFRENE"), or side by side
+        // but not on one row (slanted script: "Philippe" "Chavy").
+        val keywordOnly = Text.normalize(best.text).split(' ').all { producerWords.matches(it) }
+        val near = lines.indices.filter { j ->
+            val other = lines[j]
+            other !in rowParts && joinable(j) && Text.normalize(other.text).split(' ').size + norms[top.index].split(' ').size <= 5 &&
+                // Same letter size: the rest of the name. A cuvée under the producer ("Muga" /
+                // "Selección Especial", "KAIKEN" / "ultra") differs more (ratios 0.51-0.74 vs >= 0.89).
+                (minOf(other.height, best.height) / maxOf(other.height, best.height) >= 0.8 || keywordOnly ||
+                    norms[j] in connectors) &&
+                (stacked(best, other) || beside(best, other))
+        }
+        val parts = (rowParts + near.take(2).map { lines[it] }).distinct().sortedWith(readingOrder)
         val text = parts.joinToString(" ") { cleanName(it.text) }
         return Field(text, top.conf * parts.minOf { it.confidence }, parts.joinToString(" | ") { it.text })
+    }
+
+    private fun xOverlap(a: OcrLine, b: OcrLine) =
+        minOf(a.box.maxOf { it.x }, b.box.maxOf { it.x }) - maxOf(a.left, b.left)
+    private fun yOverlap(a: OcrLine, b: OcrLine) =
+        minOf(a.box.maxOf { it.y }, b.box.maxOf { it.y }) - maxOf(a.box.minOf { it.y }, b.box.minOf { it.y })
+
+    /** Directly above or below, horizontally overlapping by half the narrower line, gap < half a line. */
+    private fun stacked(a: OcrLine, b: OcrLine): Boolean {
+        val narrower = minOf(a.box.maxOf { it.x } - a.left, b.box.maxOf { it.x } - b.left)
+        return xOverlap(a, b) >= 0.5 * narrower && yOverlap(a, b) >= -0.5 * maxOf(a.height, b.height)
+    }
+
+    /** Next to each other, overlapping vertically by half the smaller line, gap < one line height. */
+    private fun beside(a: OcrLine, b: OcrLine) =
+        yOverlap(a, b) >= 0.5 * minOf(a.height, b.height) && xOverlap(a, b) >= -minOf(a.height, b.height) &&
+            xOverlap(a, b) < 0.5 * minOf(a.box.maxOf { it.x } - a.left, b.box.maxOf { it.x } - b.left)
+
+    /** Top to bottom; pieces overlapping vertically by half a line count as one line, left to right. */
+    private val readingOrder = Comparator<OcrLine> { a, b ->
+        if (yOverlap(a, b) >= 0.5 * minOf(a.height, b.height)) a.left.compareTo(b.left)
+        else a.box.minOf { it.y }.compareTo(b.box.minOf { it.y })
+    }
+
+    private const val REPEAT_BONUS = 0.5
+
+    /** Small words inside names, often printed smaller ("Casillero" / "del" / "Diablo"). */
+    private val connectors = setOf("de", "del", "della", "di", "da", "du", "des", "la", "le", "y", "e", "et", "and", "von", "van", "zu")
+
+    /** Any region, country or grape name in [text], OCR-damaged ones included ("new zealan"). */
+    private fun mentionsPlaceOrGrape(text: String) =
+        listOf(Reference.regions, Reference.countries, Reference.grapes).any { matchNames(listOf(text), it).isNotEmpty() }
+
+    /** Same name printed twice, allowing for an OCR slip or a cut-off end ("WIN ISLANDS"). */
+    private fun sameName(a: String, b: String): Boolean {
+        val x = a.replace(" ", ""); val y = b.replace(" ", "")
+        if (x.length < 4 || y.length < 4) return false
+        return x == y || SequenceMatcher.ratio(x, y) >= 0.85
     }
 
     // \p{L}\p{N}_ = Unicode \w on both the JVM and Android (ICU), without the (?U) flag ICU rejects.
@@ -421,6 +488,8 @@ object LabelParser {
                     rest = rest.replace(h.name.key, " ")
                 }
             }
+            // Classification terms too: "Beerenauslese" or "RESERVA" alone is not a producer.
+            for ((pattern, _) in classifications) rest = pattern.replace(rest, " ")
             if (marker.containsMatchIn(norm) || nonLetters.replace(rest, "").isEmpty()) claimed.add(i)
         }
         return claimed
