@@ -20,8 +20,7 @@ private const val USAGE = """Desktop wine-label OCR (same models and pipeline as
   scan <photo> [--json] [--debug-image boxes.png]   text + fields of one photo
   eval <folder> [--only a.jpg,b.jpg] [--dump dir]   accuracy against <folder>/expected.json
 
-Run from android/:  ./gradlew -q :core:cli --args="eval fixtures/images"
-(relative paths are resolved from the repository root)"""
+Run from the repository root:  ./gradlew -q :core:cli --args="eval fixtures/images""""
 
 fun main(args: Array<String>) {
     val cmd = args.firstOrNull()

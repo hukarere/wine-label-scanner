@@ -22,7 +22,7 @@ android {
     // On-device test (DeviceScanTest) reads the shared photo fixtures as test-APK assets.
     // -Pphotos=vinmonopolet packages the local-only set instead of fixtures/images.
     val photos = (findProperty("photos") as String?) ?: "images"
-    sourceSets["androidTest"].assets.srcDir(rootProject.file("../fixtures/$photos"))
+    sourceSets["androidTest"].assets.srcDir(rootProject.file("fixtures/$photos"))
     // photoset.txt tells DeviceScanTest which set it got (accuracy floors exist only for "images").
     val photoSetDir = layout.buildDirectory.dir("generated/photoset").get().asFile
     photoSetDir.resolve("photoset.txt").apply { parentFile.mkdirs(); writeText(photos) }

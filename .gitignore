@@ -1,3 +1,11 @@
+# Gradle / IDE
+.gradle/
+.kotlin/
+build/
+local.properties
+*.iml
+.idea/
+
 # Built APKs are distributed separately, not versioned
 *.apk
 *.apk.gz

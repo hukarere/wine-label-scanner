@@ -13,17 +13,17 @@ in the Android app and on the desktop JVM (tests, CLI). The original Python prot
 was retired (PROJECT_NOTES timeline 20); it is in git history.
 
 ```
-android/              Gradle project
-  core/               pure Kotlin/JVM: the whole OCR pipeline + layout + parser
-    src/cli/          desktop CLI (scan / eval) + Evaluate (scoring shared with the tests)
-    src/main/resources/winelabel/data/   grapes.txt, regions.txt (name|country), countries.txt
-  app/                Compose UI, ONNX + ML Kit engines, image loading, memory budget, debug report
-  tools/device-test.sh  run DeviceScanTest on the user's phone, record peak memory
+(repo root)           Gradle project: settings.gradle.kts, gradlew, gradle/libs.versions.toml
+core/                 pure Kotlin/JVM: the whole OCR pipeline + layout + parser
+  src/cli/            desktop CLI (scan / eval) + Evaluate (scoring shared with the tests)
+  src/main/resources/winelabel/data/   grapes.txt, regions.txt (name|country), countries.txt
+app/                  Compose UI, ONNX + ML Kit engines, image loading, memory budget, debug report
 fixtures/
   text/               OCR-line test cases (JSON)
   images/             8 labelled Wikimedia photos + expected.json + ATTRIBUTION.md
   vinmonopolet/       26 retailer packshots, LOCAL ONLY (copyrighted, gitignored) — tools/fetch_vinmonopolet.py
   vinmonopolet.expected.json  its hand-checked ground truth (committed; the folder's expected.json links here)
+tools/device-test.sh  run DeviceScanTest on the user's phone, record peak memory
 tools/fetch_vinmonopolet.py   recreate the local-only set (python3, stdlib only)
 docs/PROJECT_NOTES.md history, architecture, decisions, numbers, gotchas, roadmap
 docs/RELEASE_PLAN.md  plan for the release build (R8, signing key) — not started
@@ -35,18 +35,18 @@ docs/RELEASE_PLAN.md  plan for the release build (R8, signing key) — not start
   was tried and fails — PROJECT_NOTES timeline 16). Everything testable runs on the JVM here,
   plus the user's real phone when they open the adb tunnel (below).
 - JDK 17: `export JAVA_HOME=~/opt/jdk-17` (not on PATH by default — Gradle fails without it).
-- Android SDK: `~/Android/Sdk` (referenced by `android/local.properties`, gitignored;
+- Android SDK: `~/Android/Sdk` (referenced by `local.properties`, gitignored;
   in a fresh clone set `ANDROID_HOME=~/Android/Sdk`).
 - Git: remote `git@github.com:hukarere/wine-label-scanner.git` (public); the repo's
   `core.sshCommand` uses `~/.ssh/github-hukarere`. No `gh` CLI.
 
-## Commands (from android/)
+## Commands (from the repository root)
 
 ```bash
 export JAVA_HOME=~/opt/jdk-17
 ./gradlew :core:test                                  # 64 tests, ~1 min (incl. OCR on 8 photos)
 ./gradlew -q :core:cli --args="scan fixtures/images/filhot_2008.jpg [--json] [--debug-image /tmp/b.png]"
-./gradlew -q :core:cli --args="eval fixtures/images [--only a.jpg,b.jpg] [--dump dir]"   # paths from repo root
+./gradlew -q :core:cli --args="eval fixtures/images [--only a.jpg,b.jpg] [--dump dir]"   # paths relative to the repo root
 ./gradlew :core:test --tests winelabel.PpOcrParityTest -Pphotos=vinmonopolet [-Pdump=dir] --rerun
 ./gradlew :app:assembleDebug                          # app/build/outputs/apk/debug/app-debug.apk
 ./gradlew :app:assembleDebugAndroidTest [-Pphotos=vinmonopolet]   # on-device test APK
@@ -89,7 +89,7 @@ copy a stale APK. Fixtures aren't Gradle task inputs: after editing them use `--
 
 - **Preferred:** the user opens an SSH reverse tunnel to their adb server
   (`ssh -N -R 5038:localhost:5037 grg@<vps>`); then `adb -P 5038 …` here reaches their phone
-  (Android 10, 2.7 GB RAM). Install, run `android/tools/device-test.sh`, read logcat yourself —
+  (Android 10, 2.7 GB RAM). Install, run `tools/device-test.sh`, read logcat yourself —
   see PROJECT_NOTES "Testing on the user's phone". Check with `adb -P 5038 devices` first.
 - **It is the user's own phone**: instrumentation tests run in the background, but don't open
   the app's UI or push files without asking — they may be using the phone (check

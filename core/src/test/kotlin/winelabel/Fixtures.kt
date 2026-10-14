@@ -12,7 +12,7 @@ import java.io.File
 
 /** Access to the test fixtures in the repository's top-level fixtures/ folder. */
 object Fixtures {
-    val root = File(System.getProperty("winelabel.fixtures") ?: "../../fixtures")
+    val root = File(System.getProperty("winelabel.fixtures") ?: "../fixtures")
     val modelsDir = File(System.getProperty("winelabel.models") ?: "../app/src/main/assets/models")
 
     fun readJson(file: File): JsonElement = Json.parseToJsonElement(file.readText())

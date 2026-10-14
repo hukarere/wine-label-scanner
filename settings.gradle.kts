@@ -12,5 +12,5 @@ dependencyResolutionManagement {
         mavenCentral()
     }
 }
-rootProject.name = "WineLabelScanner"
+rootProject.name = "wine-label-scanner"
 include(":core", ":app")

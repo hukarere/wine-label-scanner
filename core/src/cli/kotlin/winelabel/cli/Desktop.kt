@@ -14,7 +14,7 @@ import javax.imageio.ImageIO
 /** Desktop (JVM) helpers: the same models and pipeline as the app, images read with ImageIO. */
 object Desktop {
     /** Where the app's model files live; the Gradle tasks pass it as a system property. */
-    val modelsDir = File(System.getProperty("winelabel.models") ?: "android/app/src/main/assets/models")
+    val modelsDir = File(System.getProperty("winelabel.models") ?: "app/src/main/assets/models")
 
     fun engine(dir: File = modelsDir) = PpOcrEngine(
         dir.resolve("PP-OCRv6_det_small.onnx").readBytes(),

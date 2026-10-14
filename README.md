@@ -1,38 +1,122 @@
 # Wine Label Scanner
 
-Read a wine bottle label from a photo: **all the text on it** plus **parsed fields**
-(producer, vintage, appellation, classification, grapes, alcohol %, volume, country).
-OCR runs fully on-device with PaddleOCR's PP-OCRv6 models on ONNX Runtime.
+Android app: take or pick a photo of a wine bottle → **all text on the label** + **parsed
+fields** (producer, vintage, appellation, classification, grapes, ABV, volume, country).
+Fully on-device, two switchable OCR engines:
 
-| Directory | What |
-|---|---|
-| [`android/`](android/README.md) | Android app (Kotlin, Compose). `core/` holds the whole recognition pipeline as plain Kotlin, so it also runs and is tested on a desktop JVM |
-| `fixtures/` | Test cases: OCR-line cases (`text/`), 8 labelled real photos (`images/`), ground truth for a local-only retailer photo set |
-| `tools/` | `fetch_vinmonopolet.py`: downloads the local-only retailer photo set (stdlib Python) |
-| [`docs/`](docs/PROJECT_NOTES.md) | Project notes: status, roadmap, decisions, measurements |
+- **PP-OCR (ONNX)** — PaddleOCR PP-OCRv6 det/rec + orientation classifier on ONNX Runtime
+  (a port of rapidocr's pipeline). The default and the more accurate engine.
+- **ML Kit** — Google's on-device Latin text recognizer, kept as the fast option.
 
-The project started with a Python prototype (rapidocr); it was retired once the Kotlin
-port matched it (see the notes). It is in the git history before the retirement commit.
+The recognition pipeline (`core/`) is plain Kotlin, so it also runs and is tested on a
+desktop JVM with exactly the phone's results. The project started with a Python prototype
+(rapidocr); it was retired once the Kotlin port matched it and is in the git history.
 
-## Quick start
+## Install the debug APK
 
 ```bash
-cd android                             # JDK 17 + Android SDK
-./gradlew :core:test                   # parser, layout and OCR tests on the JVM
+scp <vps>:/home/grg/android/wine-label-scanner-debug.apk .
+adb install -r wine-label-scanner-debug.apk
+```
+
+Or open the file on the phone → allow "install unknown apps" → Install.
+Android 7.0+ (arm64 phones).
+
+## Use
+
+1. Pick the engine (chips at the top), then **Take photo** or **Choose photo**
+   (or share a photo into the app from the gallery).
+2. Results: the photo with detected text boxes (green = confident, orange =
+   doubtful), the parsed fields with confidence (faded = below 50%), and all text.
+   "reduced detail: low memory" means the phone was short of memory and the text
+   detector ran on a smaller copy of the photo.
+3. **Re-scan with …** reads the same photo with the other engine.
+4. **Copy debug report** copies JSON (device, engine, timings, detector size and free
+   memory, every OCR line with its box and confidence, fields). Paste it back to turn a
+   bad scan into a test case.
+
+## Build and test
+
+JDK 17 + Android SDK (`local.properties` or `ANDROID_HOME`). From the repository root:
+
+```bash
+./gradlew :core:test                   # 64 JVM tests, ~1 min
 ./gradlew -q :core:cli --args="scan fixtures/images/filhot_2008.jpg"   # read one photo
 ./gradlew -q :core:cli --args="eval fixtures/images"                   # accuracy on a folder
 ./gradlew :app:assembleDebug           # app/build/outputs/apk/debug/app-debug.apk
 ```
 
+On a phone (via adb): `./gradlew :app:assembleDebugAndroidTest`, install both APKs,
+then `tools/device-test.sh ONNX` — see `docs/PROJECT_NOTES.md` "Testing on the user's phone".
+
+## Layout
+
+```
+core/   pure Kotlin/JVM — all recognition logic, tested on the desktop
+  src/main/kotlin/winelabel/
+    model/      OcrLine, RgbImage (platform-neutral image)
+    layout/     reading order, raw text
+    parse/      LabelParser, Reference (grape/region/country lists), Text,
+                SequenceMatcher (difflib's ratio, for fuzzy matching)
+    ocr/        OcrEngine interface, PpOcrEngine (port of rapidocr's pipeline),
+                ImageOps + Geometry (replace OpenCV / pyclipper)
+    Scanner.kt  image -> OCR -> noise filter -> reading order -> fields
+  src/main/resources/winelabel/data/   grapes.txt, regions.txt, countries.txt
+  src/cli/      desktop command line (scan / eval) and the shared evaluator; not in the app
+  src/test/     JUnit tests
+app/    Android (Compose)
+  Engines.kt        ONNX engine from assets, ML Kit adapter
+  AppScan.kt        free-memory budget -> detector size cap, scan, engine details
+  AndroidImages.kt  URI -> downsampled, EXIF-rotated RgbImage
+  ScanViewModel.kt  state machine, runs scans off the main thread
+  DebugReport.kt    JSON report
+  ui/ScanScreen.kt  the single screen
+  src/androidTest/  DeviceScanTest: both engines on a photo set, on a real phone
+fixtures/  text/ (OCR-line cases), images/ (8 labelled photos), vinmonopolet.expected.json
+tools/     device-test.sh (on-device test + peak memory), fetch_vinmonopolet.py (local-only photo set)
+docs/      PROJECT_NOTES.md (status, roadmap, decisions, measurements), RELEASE_PLAN.md
+```
+
+`core` compiles against `ai.onnxruntime` from the desktop artifact (`compileOnly`); the app
+supplies `onnxruntime-android`, which has the same API.
+
+## Tests
+
+| Test | What it checks |
+|---|---|
+| `ParserFixtureTest` | every OCR-line case in `fixtures/text` |
+| `ParserTest`, `LayoutTest` | parser and layout units, difflib-compatible fuzzy scores, noise filter |
+| `SyntheticLabelTest` | a rendered label (straight and rotated 7°) through the real models |
+| `PpOcrParityTest` | OCR + parser on the 8 photos in `fixtures/images`: accuracy floors, and OCR text vs. the frozen golden output in `core/src/test/resources/golden` (from the retired Python prototype) |
+| `AndroidRegexCompatTest` | every regex is valid on Android's ICU engine |
+
+Results on the photo sets (identical on the desktop JVM and on the phone):
+
+| | Fields | Text snippets |
+|---|---|---|
+| 8 Wikimedia photos (`fixtures/images`) | 31/37 | 39/59 |
+| 26 Vinmonopolet photos (local only) | 89/108 | 123/140 |
+
 ## Working on this project
 
 Start with [`AGENTS.md`](AGENTS.md) (environment, commands, rules; Claude Code loads it via
 `CLAUDE.md`). History, decisions, measurements, status and roadmap are in
-[`docs/PROJECT_NOTES.md`](docs/PROJECT_NOTES.md).
+[`docs/PROJECT_NOTES.md`](docs/PROJECT_NOTES.md); the release-build plan in
+[`docs/RELEASE_PLAN.md`](docs/RELEASE_PLAN.md).
+
+## Notes
+
+- APK is ~74 MB: models 32 MB, ONNX Runtime 18 MB, ML Kit 12 MB, unminified debug
+  code ~10 MB. A release build with R8 would drop most of the code size (plan in docs).
+- ML Kit's dependencies add INTERNET/ACCESS_NETWORK_STATE permissions (Google
+  telemetry); OCR itself never needs the network.
+- The recognizer's character list ships as `app/src/main/assets/models/ppocrv6_keys.txt`:
+  it is also embedded in the ONNX model metadata, but ONNX Runtime's Java API mangles that
+  UTF-8 string, so it was extracted with the Python `onnx` package (recipe in the notes).
 
 ## Third-party content
 
-- OCR models in `android/app/src/main/assets/models/`: PaddleOCR PP-OCRv6 and
+- OCR models in `app/src/main/assets/models/`: PaddleOCR PP-OCRv6 and
   PP-OCR text orientation classifier (Apache License 2.0), ONNX conversions distributed
   by [RapidOCR](https://github.com/RapidAI/RapidOCR).
 - Test photos in `fixtures/images/`: Wikimedia Commons, CC BY-SA / public

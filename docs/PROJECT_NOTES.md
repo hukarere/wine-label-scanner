@@ -82,6 +82,7 @@ Prioritized; none started unless noted.
     vertical text measured by its letter height, not its length (`OcrLine.height`); +0.5 bonus for a name printed twice (capsule/neck + label; fuzzy, ratio ≥ 0.85); classification-only lines ("Beerenauslese") no longer candidates; lines of 6+ words (5 without a producer word) skipped as slogans; generic end words (winery, wines, estate, vineyard(s), cellar(s)) get +0.2 instead of +0.5; the chosen line is joined with a stacked or side-by-side piece of similar letter size (ratio ≥ 0.8, or any size after a bare keyword like "DOMAINE", or a connector like "del"), never with places, grapes, legal lines or pieces of 4+ words.
     **Vinmonopolet 77 → 83/108, producer 10 → 16/24**; phone identical (83/108), ML Kit 69 → 71/108. Remaining producer misses: OCR misreads (Schramsberge, Chatean, SAINTE MAGDEL cut off, Gigi Ron, Doisy "Daine", "SUFPRENE"), brand printed larger than the producer (Casillero del Diablo / Concha y Toro, Post Scriptum / Prats & Symington, Busy Lissy / Bunn Strebel), K Vintners only in "bottled by…", First Drop.
 23. **Reference data**: regions Patagonia, Mornington Peninsula, Anderson Valley, Neusiedlersee, Colli Tortonesi, Friuli Colli Orientali (+ Colli Orientali del Friuli); grapes Refosco, Refosco dal Peduncolo Rosso, Timorasso, Traminer (Gewürztraminer still wins as the longer name). Grapes split over two lines are matched like classifications (consecutive pairs, exact, crossing the break; the longer name replaces the shorter one it contains). **Vinmonopolet 83 → 89/108** (JVM = phone), Commons unchanged 31/37.
+24. **Flattened the repository**: the Gradle project moved from `android/` to the repo root (`app/`, `core/`, `settings.gradle.kts`, `gradlew` at the top; `android/tools/device-test.sh` → `tools/`), since `android/` only existed to separate it from the retired Python prototype. Gradle project renamed `WineLabelScanner` → `wine-label-scanner`. Commands run from the repo root. No code or behaviour change.
 
 ---
 
@@ -114,7 +115,7 @@ photo
 - `match_names` over reference lists (longest names first), three passes on unclaimed words: exact word sequence → glued token (multi-word name ≥ 8 chars inside one token) → fuzzy (difflib ratio ≥ 0.88; ≥ 0.80 for names ≥ 12 chars, also vs. the name's prefix ×0.95 for truncation; names < 6 chars exact only).
 - Extractors: ABV (3 regex tiers, 4.5–23 %), volume (ml/cl/l → ml, 100–6000, common sizes trusted), vintage (1950–2049, ≤ current year, skip founding/classification lines, prefer standalone/large/"vintage"-hinted), classification (ordered pattern list with blanking + adjacent-line pairs that must cross the break; strict case-sensitive `DO`), appellation ("Appellation X Contrôlée" phrase, else region names near markers/more words/larger text), grapes, country (phrase → any name → appellation's country → classification's country), producer (keyword bonus + text height, excluding bottling/legal/founding lines and lines fully explained by other fields; merges same-row pieces; strips ®/@ noise).
 
-### Kotlin modules (`android/core/src/`)
+### Kotlin modules (`core/src/`)
 
 | Path | What |
 |---|---|
@@ -128,7 +129,7 @@ photo
 `core` compiles against `com.microsoft.onnxruntime:onnxruntime` (`compileOnly`, desktop); the
 app supplies `onnxruntime-android` — same `ai.onnxruntime` API.
 
-### App (`android/app/src/main/kotlin/winelabel/app/`)
+### App (`app/src/main/kotlin/winelabel/app/`)
 
 - `MainActivity` — Compose host; accepts `ACTION_SEND image/*` (share a photo into the app).
 - `ScanViewModel` — `UiState` Idle / Working / Done(result, info) / Error(message, details); engine choice persisted in SharedPreferences; keeps the last image for "Re-scan with other engine"; logs errors with tag `WineLabel`.
@@ -284,7 +285,6 @@ Ground-truth rules used: score only what is printed on the front/neck label; vin
 brand is shown; country if printed or implied by a printed appellation.
 
 ```bash
-cd android
 ./gradlew -q :core:cli --args="eval fixtures/vinmonopolet"        # JVM, per-photo report
 ./gradlew :app:assembleDebugAndroidTest -Pphotos=vinmonopolet     # phone: then install + tools/device-test.sh
 ```
@@ -305,7 +305,7 @@ speak the same protocol (the `1.0.41` in `adb version`). While the tunnel is ope
 logged in to the VPS controls the phone.
 
 ```bash
-cd android && export JAVA_HOME=~/opt/jdk-17
+export JAVA_HOME=~/opt/jdk-17
 ./gradlew :app:assembleDebug :app:assembleDebugAndroidTest
 A="$HOME/Android/Sdk/platform-tools/adb -P 5038"
 $A install -r -t app/build/outputs/apk/debug/app-debug.apk                      # ~1 min over the tunnel
@@ -350,7 +350,6 @@ prototype; `PpOcrParityTest` only checks mean text similarity ≥ 0.9, so don't 
 just because the pipeline changed slightly):
 
 ```bash
-cd android
 ./gradlew -q :core:cli --args="scan fixtures/images/<photo>.jpg --json" > core/src/test/resources/golden/<photo>.json
 ```
 
@@ -359,7 +358,7 @@ throwaway venv):
 
 ```bash
 python3 -m venv /tmp/onnxenv && /tmp/onnxenv/bin/pip install -q onnx
-cd android && /tmp/onnxenv/bin/python -c "
+/tmp/onnxenv/bin/python -c "
 import onnx
 meta = {p.key: p.value for p in onnx.load('app/src/main/assets/models/PP-OCRv6_rec_small.onnx').metadata_props}
 open('app/src/main/assets/models/ppocrv6_keys.txt', 'w', encoding='utf-8', newline='\n').write(meta['character'])"

@@ -15,7 +15,7 @@ key of our own.
 
 ### 1. Code shrinking (R8)
 
-- `android/app/build.gradle.kts`: `buildTypes.release { isMinifyEnabled = true; isShrinkResources = true;
+- `app/build.gradle.kts`: `buildTypes.release { isMinifyEnabled = true; isShrinkResources = true;
   proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro") }`.
 - R8 removes unused code from the app and its libraries (Compose, Kotlin stdlib, AndroidX, ML Kit's
   Java side), renames and optimizes the rest.
@@ -36,7 +36,7 @@ key of our own.
 - Create a release keystore once:
   `keytool -genkeypair -v -keystore ~/keys/wine-label-scanner-release.jks -alias release -keyalg RSA -keysize 4096 -validity 10000`
 - **Never in the repo** (it's public). Keystore path and passwords in a local, gitignored
-  `android/keystore.properties` (or environment variables), read by `signingConfigs.release`.
+  `keystore.properties` (or environment variables), read by `signingConfigs.release`.
 - **Never lose it**: without it no future version installs as an update (users must uninstall
   and reinstall). The user keeps a backup copy off the VPS.
 - Switching from the debug-signed app to the release-signed one needs **one uninstall** on the
@@ -77,7 +77,7 @@ builds); **scan speed unchanged** (the time is spent in ONNX Runtime's native co
 
 1. Enable R8 for release; add keep rules (start minimal, add what fails).
 2. Create the keystore (after the user agrees where it lives); `signingConfigs.release` reading
-   `android/keystore.properties`; add that file to `.gitignore`.
+   `keystore.properties`; add that file to `.gitignore`.
 3. Build `assembleRelease`; check size (`ls -l`, `apkanalyzer` in the SDK's cmdline-tools).
 4. On the phone over the adb tunnel: uninstall the debug app, install the release APK; run the
    on-device test against a minified build for **both engines** on both photo sets — results must

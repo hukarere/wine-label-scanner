@@ -24,7 +24,7 @@ dependencies {
     testRuntimeOnly(libs.junit.launcher)
 }
 
-val repoRoot = rootProject.projectDir.parentFile
+val repoRoot = rootProject.projectDir
 val models = rootProject.file("app/src/main/assets/models")
 
 tasks.test {
