@@ -43,7 +43,7 @@ class PpOcrParityTest {
         val r = report
         println("FIELDS ${r.fieldsOk}/${r.fieldsTotal}  TEXT ${r.textOk}/${r.textTotal}  TIME ${r.millis} ms")
         if (!isDefaultSet) return
-        // Floors just under the current scores (31/37, 38/59); raise them as accuracy improves.
+        // Floors just under the current scores (31/37, 39/59); raise them as accuracy improves.
         assertTrue(r.fieldsOk.toDouble() / r.fieldsTotal >= 0.78, "field accuracy ${r.fieldsOk}/${r.fieldsTotal}")
         assertTrue(r.textOk.toDouble() / r.textTotal >= 0.62, "text recall ${r.textOk}/${r.textTotal}")
     }

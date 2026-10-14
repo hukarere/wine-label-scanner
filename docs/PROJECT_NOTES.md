@@ -77,6 +77,7 @@ Prioritized; none started unless noted.
 18. The 8 Commons photos aren't representative. Built a second, **local-only** set of 26 Vinmonopolet packshots (`python/tools/fetch_vinmonopolet.py`, gitignored output) with hand-checked ground truth (committed as `python/fixtures/vinmonopolet.expected.json`): 8 of the shop's vintages didn't match the label, producers are often company names, ABV/volume usually sit on the back label. PP-OCR (JVM and phone, identical) 77/108 fields, ML Kit 69/108; they differ mainly on producer (10 vs 4 of 24). `PpOcrParityTest` and the androidTest APK take `-Pphotos=<folder>`.
 19. PP-OCR memory work. Lighter detectors (v6 tiny, v5/v4 mobile) tie on Vinmonopolet but lose 7–9 fields on Commons and save at most ~150 MB → rejected. Cut Java copies: `Scanner.prepare` resizes one channel at a time from the packed pixels; the detector tensor is resized+normalized straight into a direct buffer that ORT uses without copying — **bit-identical OCR output on all 34 photos** (`-Pdump` diff), peaks −40…80 MB. Added `PpOcrEngine.detMaxPixels` (default 0 = off, so JVM/Python parity is unchanged) and `AppScan`/`DeviceMemory`: before each ONNX scan the app caps the detector input to (availMem − threshold − 64 MB) / 170 B, min 1 MP. Debug report gains `det_input`, `det_capped`, `det_max_pixels`, `avail_mem_mb`; the UI says "reduced detail: low memory".
 20. **Retired the Python prototype.** It doubled every parser change, and the Kotlin `core` on the JVM is the more faithful test bed (it gives the phone's exact results; Python scored 74 vs 77/108 on Vinmonopolet). Moved `python/fixtures/` → `fixtures/` and the fetch script → `tools/`; added the desktop CLI (`core/src/cli`: `scan`, `eval`, shared `Evaluate` used by the tests too); ported the two Python-only tests (noise filter, synthetic rendered label at 0°/7°) → 58 Kotlin tests. CLI `eval --dump` output is identical to the pre-move baseline on all 34 photos. The golden OCR output in `core/src/test/resources/golden/` stays as a frozen reference.
+21. **Detector size rounding** now matches rapidocr: multiples of 32 with halves to even (`Math.rint`), so a 2000 px side becomes 1984, not 2016 — this hits every camera photo (the app shrinks them to a 2000 px long side). Changed exactly the 7 affected photos of 34: fields unchanged (31/37, 77/108), Commons text 38→39/59, ~1.6 % fewer detector pixels. Phone: identical (31/37, 39/59), all 8 in one process peak 731 MB (was 764).
 
 ---
 
@@ -169,6 +170,7 @@ app supplies `onnxruntime-android` — same `ai.onnxruntime` API.
 | Python, CLAHE (default) | 30/37 | 40/59 | ~2 s/photo |
 | Python, `--no-enhance` | 32/37 | 38/59 | |
 | Kotlin `core` on the JVM | 31/37 | 38/59 | OCR text similarity to Python 0.971; 1–3 s/photo |
+| Kotlin, half-even size rounding (timeline 21) | 31/37 | **39/59** | current |
 
 Parameter sweep (Python, before the later parser fixes): medium model 24/37 and 37/59 at 4× the time; detector `limit_side_len` 960/1280 and lower thresholds changed results by ±1–2; upscaling small photos helped only one image.
 

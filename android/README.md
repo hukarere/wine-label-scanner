@@ -84,7 +84,7 @@ Results on the photo sets (identical on the VPS JVM and on the phone):
 
 | | Fields | Text snippets |
 |---|---|---|
-| 8 Wikimedia photos (`fixtures/images`) | 31/37 | 38/59 |
+| 8 Wikimedia photos (`fixtures/images`) | 31/37 | 39/59 |
 | 26 Vinmonopolet photos (local only) | 77/108 | 123/140 |
 
 ## Notes

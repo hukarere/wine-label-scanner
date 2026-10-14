@@ -148,7 +148,8 @@ class PpOcrEngine(
 
     // ------------------------------------------------------------------ preprocessing
 
-    private fun round32(v: Int) = (v / 32.0).roundToInt() * 32
+    /** Nearest multiple of 32; halves to even like Python's round() in rapidocr (2000 -> 1984, not 2016). */
+    private fun round32(v: Int) = Math.rint(v / 32.0).toInt() * 32
 
     private fun boundSides(src: Planes): Triple<Planes, Double, Double> {
         var img = src
